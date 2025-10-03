@@ -79,12 +79,15 @@ WSGI_APPLICATION = 'legacy_website.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
+   'default': dj_database_url.config(
         # CRITICAL: Looks for the DATABASE_URL environment variable from Render
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
     )
 }
+
+
+
 
 
 # Password validation
