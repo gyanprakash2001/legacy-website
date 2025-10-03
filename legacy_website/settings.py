@@ -26,12 +26,11 @@ SECRET_KEY = 'django-insecure-h*(dfrl3dit^30qbe=v5+10j4-ns*_bt)k5uu84%$ma4%a2-1z
 DEBUG = False
 
 # Ensure all hosts are single strings separated by commas
-ALLOWED_HOSTS = [
-    'legacy-website-dg1.onrender.com',
-    '.render.com',
-    'localhost',
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = ['*']
+
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 
