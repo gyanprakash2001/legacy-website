@@ -78,7 +78,7 @@ DATABASES = {
         # CRITICAL: Looks for the DATABASE_URL environment variable from Render
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
-        # REMOVED: conn_health_check=True, <--- THIS WAS THE ERROR
+        # THE FAULTY LINE MUST BE GONE HERE
     )
 }
 
