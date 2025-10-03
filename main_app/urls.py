@@ -29,3 +29,5 @@ urlpatterns = [
     path('api/state-autocomplete/', views.state_autocomplete, name='state_autocomplete'),
     path('profile/', views.profile_view, name='profile'),
 ]
+
+

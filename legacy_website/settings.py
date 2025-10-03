@@ -27,10 +27,10 @@ DEBUG = False
 
 # Ensure all hosts are single strings separated by commas
 ALLOWED_HOSTS = [
+    'legacy-website-dg1.onrender.com',
     '.render.com',
     'localhost',
     '127.0.0.1',
-    'legacy-website-dg1.onrender.com'
 ]
 
 # Application definition
@@ -145,3 +145,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = '/login/'
+
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
