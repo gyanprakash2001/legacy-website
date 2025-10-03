@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Registrations</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .registration-container { /* Renamed for clarity on this page */
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .page-header {
+            border-bottom: 1px solid #f0f2f5;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+            color: #1c1e21;
+        }
+    </style>
+</head>
+<body>
+
+<div class="registration-container">
+    <div class="page-header">
+        <h1>Registrations for {{ event.event_name }}</h1>
+        <a href="{% url 'event_log' %}" style="text-decoration: none; color: #007bff; font-weight: 500;">&larr; Back to My Posted Events</a>
+    </div>
+
+    <div class="registration-list-content">
+        {% if registrations %}
+            <p class="registration-count">Total Registrations: {{ registrations|length }}</p>
+
+            <table class="registrations-table">
+                <thead>
+                    <tr>
+                        <th>Applicant Name</th>
+                        <th>College Name</th>
+                        <th>Email Address</th>
+                        <th>WhatsApp Number</th>
+                        <th>Registration Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                    <tr>
+                        <td>{{ reg.name }}</td>
+                        <td>{{ reg.college_name }}</td>
+                        <td>
+                            <a href="mailto:{{ reg.email_id }}">{{ reg.email_id }}</a>
+                        </td>
+                        <td>{{ reg.whatsapp_number|default:"N/A" }}</td>
+                        <td>{{ reg.applied_at|date:"F d, Y P" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-registrations-message">No one has registered for this event yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

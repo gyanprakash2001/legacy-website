@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create an Event</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <div class="form-container">
+
+        <div class="form-header">
+            <h1>Create a New Event</h1>
+        </div>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if event_link %}
+            <div class="generated-link-container">
+                <h3>Your Event is Live!</h3>
+                <p>Share this unique link for people to apply:</p>
+                <div class="link-box">
+                    <a href="{{ event_link }}" class="generated-link">{{ event_link }}</a>
+                    <button class="copy-btn">Copy</button>
+                </div>
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="event-creation-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="form-section">
+                <h2>Basic Details & Banner</h2>
+
+                <div class="form-group">
+                    <label for="{{ form.event_name.id_for_label }}">Event Name:</label>
+                    {{ form.event_name }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.event_type.id_for_label }}">Event Type:</label>
+                    {{ form.event_type }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.event_banner.id_for_label }}">{{ form.event_banner.label }}:</label>
+                    {{ form.event_banner }}
+                </div>
+
+                <div class="form-group description-group">
+                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}:</label>
+                    {{ form.description }}
+                </div>
+            </div>
+
+            <div class="form-section location-timing">
+                <h2>Location and Schedule</h2>
+
+                <div class="location-group">
+                    <div class="form-group city-field">
+                        <label for="{{ form.location.id_for_label }}">Location/City:</label>
+                        {{ form.location }}
+                    </div>
+
+                    <div class="form-group state-field">
+                        <label for="{{ form.state.id_for_label }}">State:</label>
+                        {{ form.state }}
+                    </div>
+                </div>
+
+                <div class="form-group date-field">
+                    <label for="{{ form.date_time.id_for_label }}">Date of Event:</label>
+                    {{ form.date_time }}
+                </div>
+            </div>
+
+            <div class="form-section registration-contact">
+                <h2>Registration & Contact</h2>
+
+                <div class="form-group fees-field">
+                    <label for="{{ form.registration_fees.id_for_label }}">Registration Fees:</label>
+                    {{ form.registration_fees }}
+                </div>
+
+                <div class="form-group phone-field">
+                    <label for="{{ form.phone_number.id_for_label }}">Phone Number:</label>
+                    <div class="phone-input-container">
+                        <span class="phone-prefix">+91</span>
+                        {{ form.phone_number }}
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    {{ form.show_phone_number_on_query }}
+                    <label for="{{ form.show_phone_number_on_query.id_for_label }}" class="form-check-label">
+                        Display phone number on "Query?" link
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="create-event-btn">Create Event</button>
+        </form>
+    </div>
+</body>
+</html>

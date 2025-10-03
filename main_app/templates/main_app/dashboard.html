@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - LEGACY</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar-left">
+            <div class="logo">Legacy</div>
+            <nav class="main-nav">
+                <a href="{% url 'profile' %}" class="nav-item"><i class="fa-solid fa-user-circle"></i> My Profile</a>
+                <a href="{% url 'create_event' %}" class="nav-item"><i class="fa-solid fa-calendar-plus"></i> Post Event</a>
+                <a href="{% url 'event_log' %}" class="nav-item"><i class="fa-solid fa-clipboard-list"></i> Registrations</a>
+            </nav>
+
+            <div class="event-filter-trigger" id="eventFilterTrigger">
+                <h2>Filter Events <i class="fa-solid fa-filter"></i></h2>
+            </div>
+
+            <div id="calendar-container" class="calendar-container">
+                <div class="calendar-header">
+                    <button id="prev-month">&lt;</button>
+                    <h3 id="current-month"></h3>
+                    <button id="next-month">&gt;</button>
+                </div>
+                <div class="calendar-grid-header">
+                    <span>S</span>
+                    <span>M</span>
+                    <span>T</span>
+                    <span>W</span>
+                    <span>T</span>
+                    <span>F</span>
+                    <span>S</span>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+
+            <nav class="secondary-nav">
+                <a href="{% url 'my_applications' %}" class="nav-item"><i class="fa-solid fa-receipt"></i> My Applications</a>
+            </nav>
+
+
+            <a href="{% url 'logout' %}" class="nav-item logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            <div class="more-nav"><i class="fa-solid fa-bars"></i> More</div>
+        </aside>
+
+        <main class="main-feed">
+            <div class="feed-header">
+            <h1>
+                {% if is_college_community %}  {{ page_heading }} {% elif community_page %}
+                    My Community
+                {% else %}
+                    <a href="{% url 'dashboard' %}">Home</a>
+                {% endif %}
+            </h1>
+            {% if community_page %}
+                <a href="{% url 'dashboard' %}" class="header-link">Home</a>
+            {% else %}
+                <a href="{% url 'my_community' %}" class="header-link">My Community</a>
+            {% endif %}
+        </div>
+                    <div class="start-post-container">
+                <img src="{{ request.user.userprofile.profile_icon.url }}" alt="Profile Picture" class="profile-pic">
+                <a href="{% url 'create_post' %}" class="start-post-link">
+                    <input type="text" placeholder="Share your event's memories" readonly>
+                    <button type="button" class="post-button-redirect">Post</button>
+                </a>
+            </div>
+            <div class="posts-list">
+                {% for post in posts_list %}
+                <div class="post-item">
+                    <div class="post-header">
+                        <div class="post-user-info">
+                            <img src="{{ post.author.userprofile.profile_icon.url }}" alt="Profile icon" class="post-profile-icon">
+                            <div class="user-details">
+                                <div class="username-and-college">
+                                    <span class="username">{{ post.author.username }}</span>
+                                    <span class="college-name">{{ post.author.userprofile.college_name }}</span>
+                                </div>
+                                <span class="post-timestamp">{{ post.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>{{ post.post_text }}</p>
+                        {% if post.media_files.all %}
+                            <div class="media-gallery" data-post-id="{{ post.id }}" data-media-urls='{% for media in post.media_files.all %}{% if forloop.first %}[{% endif %}"{{ media.file.url }}"{% if not forloop.last %},{% else %}] {% endif %}{% endfor %}'>
+                                {% for media in post.media_files.all|slice:":2" %}
+                                    <div class="gallery-item">
+                                        {% if media.file.url|lower|slice:"-4:" == ".mp4" or media.file.url|lower|slice:"-5:" == ".webm" %}
+                                            <video controls>
+                                                <source src="{{ media.file.url }}" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        {% else %}
+                                            <img src="{{ media.file.url }}" alt="Post Image">
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                {% if post.media_files.all|length > 2 %}
+                                    <div class="gallery-plus-sign" id="plus-sign-{{ post.id }}">
+                                        +{{ post.media_files.all|length|add:"-2" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="post-actions">
+                        <i class="fa-regular fa-heart"></i>
+                        <i class="fa-regular fa-comment"></i>
+                        <i class="fa-solid fa-retweet"></i>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No posts yet. Be the first to post something!</p>
+                {% endfor %}
+            </div>
+        </main>
+
+        <aside class="sidebar-right">
+            <div class="section-container">
+                <div class="suggested-colleges-header">
+                    <h2>Suggested Colleges</h2>
+                    <div class="college-search-container">
+                        <input type="text" placeholder="Search colleges..." id="collegeSearchInput">
+                        <button id="collegeSearchButton">
+                            &#x1F50D;
+                        </button>
+                    </div>
+                </div>
+                <div class="college-list" id="suggestedCollegeList">
+                    {% for college in suggested_colleges %}
+                    <div class="college-item">
+                        <a href="{% url 'college_community' college_name=college %}" class="college-name-link">{{ college }}</a>
+                        <a href="#" class="follow-btn" data-college-name="{{ college }}">Follow</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="section-container">
+                <h2>Upcoming events</h2>
+                <div class="event-list">
+                    {% for event in upcoming_events %}
+                    <div class="event-item">
+                        <a href="{% url 'apply_for_event' event.event_link_key %}" class="event-name-link">
+                            <h3>{{ event.event_name }}</h3>
+                        </a>
+                        <p class="event-details">{{ event.event_type.name }} - {{ event.location }}</p>
+                        <p class="event-time">{{ event.date_time|date:"F d, Y P" }}</p>
+                        <p class="event-details">Fees: {% if event.registration_fees %}{{ event.registration_fees }}{% else %}Free{% endif %}</p>
+
+                        <div class="query-container"
+                             data-email="{{ event.organizer.email }}" data-phone="{{ event.phone_number }}"
+                             data-show-phone="{% if event.show_phone_number_on_query %}true{% else %}false{% endif %}">
+                            <span class="query-link">Query?</span>
+                            <div class="contact-info-popup">
+                                <p>Email: <a href="mailto:{{ event.organizer.email }}">{{ event.organizer.email }}</a></p> <p class="phone-info" style="display: none;">Phone: {{ event.phone_number }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No upcoming events.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </aside>
+
+    <div id="media-modal" class="media-modal">
+        <div class="modal-content-container">
+            <span class="close-btn">&times;</span>
+            <img class="modal-main-content" id="modal-image" src="" alt="Post Media">
+            <video class="modal-main-content" id="modal-video" src="" controls style="display:none;"></video>
+            <a class="prev" id="prev-media">&#10094;</a>
+            <a class="next" id="next-media">&#10095;</a>
+            <div id="caption" class="modal-caption"></div>
+        </div>
+    </div>
+
+    <div id="filterModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close-btn" id="closeFilterModal">&times;</span>
+            <h2>Filter Events</h2>
+
+            <div class="filter-controls-modal">
+
+                <div class="filter-group">
+                    <label for="event-category-filter">Event Type:</label>
+                    <select id="event-category-filter">
+                        <option value="">All Event Types</option>
+                        {% for cat_with_types in categories_with_types %}
+                            <optgroup label="{{ cat_with_types.category.name }}">
+                                {% for type in cat_with_types.types %}
+                                    <option value="{{ type.id }}">{{ type.name }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="event-fees-filter">Fees:</label>
+                    <select id="event-fees-filter">
+                        <option value="">All Fees</option>
+                        <option value="free">Free Events</option>
+                        <option value="paid">Paid Events</option>
+                    </select>
+                </div>
+
+                <div class="filter-group-checkboxes">
+                    <label>
+                        <input type="checkbox" id="my-college-filter">
+                        My College Only
+                    </label>
+                    <label>
+                        <input type="checkbox" id="applied-filter">
+                        Events I've Applied To
+                    </label>
+                </div>
+
+                <div class="form-group state-filter-group">
+                    <label for="state-filter-input">State:</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="state-filter-input" placeholder="Search state...">
+                        <input type="hidden" id="selected-state-name" name="state-filter-name">
+                    </div>
+                </div>
+
+                <button id="apply-filters-btn">Apply Filters</button>
+
+            </div>
+        </div>
+    </div>
+    <div id="daily-event-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-daily-modal-btn">&times;</span>
+            <h2>Events on <span id="modal-date"></span></h2>
+            <div id="daily-event-list" class="event-list-scroll">
+                </div>
+            <p class="modal-note">Click on an event to proceed to the application form.</p>
+        </div>
+    </div>
+    <script src="{% static 'js/calendar.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

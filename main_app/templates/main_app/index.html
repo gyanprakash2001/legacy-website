@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to LEGACY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="landing-page">
+        <header>
+            <div class="logo">Legacy</div>
+            <nav>
+                <a href="#">Contact Us</a>
+                <a href="{% url 'register' %}" class="sign-up-button">Sign up</a>
+            </nav>
+        </header>
+        <div class="welcome-section">
+            <h1>WELCOME</h1>
+            <a href="{% url 'login' %}" class="login-button">Login</a>
+        </div>
+        <div class="image-section">
+            <img src="{% static 'images/CHARMINAR.png' %}" alt="Charminar">
+        </div>
+    </div>
+</body>
+</html>

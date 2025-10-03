@@ -1,0 +1,15 @@
+# Python environment and compiled files
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Sensitive and temporary data
+*.sqlite3
+/media/
+/staticfiles/
+
+# OS/IDE files
+.DS_Store
+.idea/
+*.bak

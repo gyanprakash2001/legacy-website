@@ -1,0 +1,1865 @@
+/*----------------------------------*/
+/* Global Styles & Font Imports     */
+/*----------------------------------*/
+html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap');
+
+:root {
+    --color-left-bg: #CAD0EF;
+    --color-right-bg: #CAD0EF;
+    --color-logo-text: #333333;
+    --color-text-dark: #333333;
+    --color-primary-button: #212121;
+    --color-up-text: #ffffff;
+    --color-welcome-text: #ffffff;
+}
+
+/*----------------------------------*/
+/* Landing Page Styles              */
+/*----------------------------------*/
+.landing-page {
+    display: flex;
+    min-height: 100vh;
+    background: linear-gradient(to right, var(--color-left-bg) 70%, var(--color-right-bg) 30%);
+    position: relative;
+    overflow: hidden;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 25px 60px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 20;
+}
+
+.logo {
+    font-weight: 1000;
+    font-size: 1.4rem;
+    color: var(--color-logo-text);
+    letter-spacing: -0.5px;
+}
+
+nav {
+    display: flex;
+    align-items: center;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--color-text-dark);
+    margin-left: 30px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+nav a:hover {
+    color: var(--color-primary-button);
+    transform: translateY(-2px);
+}
+
+.sign-up-button {
+    background-color: var(--color-primary-button);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1.0rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.sign-up-button:hover {
+    background-color: #333333;
+    transform: translateY(-2px);
+}
+
+.welcome-section {
+    position: absolute;
+    top: 60%;
+    left: 35%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: left;
+}
+
+.welcome-section h1 {
+    font-family: 'Rammetto One', cursive;
+    font-size: 4rem;
+    font-weight: 1000;
+    color: var(--color-welcome-text);
+    margin: 0;
+    letter-spacing: 5px;
+    text-shadow: 1.2px 1.2px 0 var(--color-logo-text);
+}
+
+.login-button:hover {
+    background-color: #333333;
+    transform: translateY(-5px);
+}
+
+.image-section {
+    position: absolute;
+    top: 120px;
+    left: 70%;
+    transform: translateX(-50%);
+    z-index: 12;
+    width: 410px;
+    height: 510px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.image-section img {
+    width: 80%;
+    height: 80%;
+    object-fit: cover;
+    border-radius: 0px;
+    box-shadow: 0 10px 36px rgba(60,30,60,0.16);
+    border: none;
+}
+
+/*----------------------------------*/
+/* Signup/Login Page Styles         */
+/*----------------------------------*/
+.signup-page, .login-page {
+    min-height: 100vh;
+    background: linear-gradient(to right, var(--color-left-bg) 70%, var(--color-right-bg) 30%);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.columns {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+.left-pane, .right-pane {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 40px 0 0;
+    height: auto;
+}
+
+.left-pane {
+    align-items: flex-end;
+}
+
+.right-pane {
+    align-items: center;
+    padding: 0 0 0 10px;
+}
+
+.signup-title, .login-title {
+    font-family: 'Rammetto One', cursive;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 2px 2px 0 #9db7c3;
+    line-height: 1.15;
+    text-align: center;
+}
+
+.signup-title {
+    font-size: 2.5rem;
+    margin-top: 0;
+}
+
+.login-title {
+    font-size: 3rem;
+    letter-spacing: 5px;
+    margin-top: 100px;
+    margin-bottom: 40px;
+}
+
+.signup-form, .login-form {
+    width: 350px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.login-form {
+    width: 320px;
+    padding: 28px 24px;
+}
+
+.signup-form {
+    margin-top: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0px;
+}
+
+.signup-form label, .login-form label {
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #222;
+}
+
+.signup-form input[type='text'], .signup-form input[type='password'],
+.login-form input[type='text'], .login-form input[type='password'] {
+    border: 2px solid #b4c8d0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 1.1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.alumni-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.register-btn, .login-btn {
+    background: #212121;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 18px;
+    padding: 12px 0;
+    margin-top: 10px;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(232, 97, 137, 0.22);
+    transition: background 0.2s;
+}
+
+.register-btn:hover, .login-btn:hover {
+    background: #CAD0EF;
+}
+
+.signup-image-card, .login-image-card {
+    width: 320px;
+    height: 410px;
+    background: #fff;
+    border-radius: 0;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.17);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.signup-image-card {
+    margin: -50px 0 0 0px;
+}
+
+.signup-image-card img, .login-image-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+@media (max-width: 1024px) {
+    .left-pane {
+        height: auto;
+    }
+}
+
+.icon-selection-group {
+    margin-top: 15px;
+}
+
+.icon-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.profile-icon-option {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.icon-choices label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.icon-choices input[type="radio"] {
+    display: none;
+}
+
+.icon-choices input[type="radio"]:checked + .profile-icon-option {
+    border-color: #007bff;
+}
+
+/*----------------------------------*/
+/* Dashboard Page Styles            */
+/*----------------------------------*/
+.dashboard-container {
+    background-color: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1c1e21;
+    display: grid;
+    /* CRITICAL CHANGE: Narrower sidebar (220px) and no left padding on the grid */
+    grid-template-columns: 250px 1fr 300px;
+    gap: 20px;
+    padding: 0 0px 20px 0; /* REMOVES LEFT PADDING FOR EDGE ALIGNMENT */
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.sidebar-left, .sidebar-right, .post-item, .section-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-left {
+    /* Restores light background, removes horizontal padding for edge alignment */
+    padding: 0px 0px 20px 0px;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border-radius: 0; /* REMOVE rounded corners */
+    box-shadow: none; /* REMOVE shadow for sleek look */
+}
+
+.sidebar-left .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 30px;
+}
+
+.main-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.main-nav .nav-item,
+.sidebar-left .logout,
+.secondary-nav .nav-item {
+    text-decoration: none;
+    color: #1c1e21; /* DARK TEXT COLOR (Black/Dark Gray) */
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 10px 20px; /* CRITICAL: Adds inner padding for far-left alignment */
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Creates space between icon and text */
+    text-align: left; /* Ensures text inside link is left-aligned */
+    transition: background-color 0.2s ease;
+}
+
+
+
+.main-nav .nav-item.active {
+    color: #000000;
+    font-weight: 700;
+    background-color: #f0f2f5;
+}
+
+.sidebar-left .more-nav {
+    margin-top: auto;
+    color: #65676b;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+}
+
+.main-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.feed-header h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.start-post-container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.start-post-container .profile-pic {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.start-post-link {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    gap: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 15px;
+    background-color: #f0f2f5;
+    box-shadow: none;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.start-post-link:hover {
+    background-color: #e4e6eb;
+}
+
+.start-post-link input[type="text"] {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #555;
+    padding: 0;
+}
+
+.post-button-redirect {
+    padding: 8px 20px;
+    border-radius: 20px;
+    background-color: #000;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+}
+
+.post-button-redirect:hover {
+    background-color: #333;
+}
+
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post-item {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-user-info {
+    display: flex;
+    align-items: center;
+}
+
+.post-user-info .post-profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.post-user-info .user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.username-and-college {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.username-and-college .username {
+    font-weight: bold;
+    margin-right: 220px;
+}
+
+.username-and-college .college-name {
+    color: #888;
+    font-size: 0.85em;
+    margin-left: auto;
+}
+
+.post-timestamp {
+    font-size: 0.75em;
+    color: #aaa;
+    margin-left: 0;
+}
+
+.post-content p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.media-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.gallery-item {
+    width: 100%;
+    padding-bottom: 100%;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gallery-item img,
+.gallery-item video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.gallery-plus-sign {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    height: 200px;
+    position: relative;
+    cursor: pointer;
+}
+
+.post-actions {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #f0f2f5;
+    padding-top: 15px;
+    font-size: 1.2rem;
+    color: #65676b;
+}
+
+.post-actions i {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.post-actions i:hover {
+    color: #000;
+}
+
+.sidebar-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.section-container h2 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0 0 15px 0;
+}
+
+.college-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Vertically centers the text and button */
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.college-item:last-child {
+    border-bottom: none;
+}
+
+.college-name {
+    font-weight: 500;
+    color: #1c1e21;
+}
+
+.follow-btn {
+    /* Existing button styles */
+    flex-shrink: 0; /* Prevents the button from shrinking when the college name is long */
+    min-width: 85px; /* Gives a uniform width to the buttons for perfect alignment */
+    text-align: center;
+
+    background-color: #e4e6eb;
+    color: #000;
+    padding: 8px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.follow-btn:hover {
+    background-color: #d1d3d8;
+}
+
+.event-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f5;
+    position: relative;
+}
+
+.event-item:last-child {
+    border-bottom: none;
+}
+
+.event-name {
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    color: #1c1e21;
+}
+
+.event-time {
+    color: #65676b;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.media-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-main-content {
+    display: block;
+    margin: 60px auto 0;
+    max-width: 90%;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+.modal-caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #bbb;
+}
+
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    padding: 16px;
+    margin-top: -50px;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    transition: 0.6s ease;
+    border-radius: 0 3px 3px 0;
+    user-select: none;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.prev:hover, .next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-gallery img,
+.modal-gallery video {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.modal-gallery img:hover,
+.modal-gallery video:hover {
+    opacity: 1;
+}
+
+.modal-content-container {
+    background-color: transparent;
+    margin: auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 900px;
+    position: relative;
+    box-shadow: none;
+    text-align: center;
+}
+
+.event-name-link {
+    text-decoration: none;
+    color: #1c1e21;
+}
+
+.event-name-link:hover {
+    text-decoration: underline;
+}
+
+.calendar-container {
+    background-color: #ffffff;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 5px 1px;
+    /* REDUCE MARGIN-TOP */
+    margin-top: -2px;
+    color: #1c1e21;
+}
+
+.calendar-container h2 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0 0 15px 0;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.calendar-header button {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #65676b;
+    transition: color 0.2s ease;
+}
+
+.calendar-header button:hover {
+    color: #000;
+}
+
+.calendar-header h3 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.calendar-grid-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: bold;
+    color: #65676b;
+    margin-bottom: 5px;
+    padding: 0 5px;
+}
+
+.calendar-grid-header > span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.calendar-grid-header span:first-child {
+    color: red;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.calendar-day:hover {
+    background-color: #f0f2f5;
+}
+
+.calendar-day.event-day {
+    background-color: #a8e6cf; /* Light green for normal events */
+    color: d4edda; /* Darker text for readability */
+    font-weight: bold;
+    border-radius: 50%;
+    position: relative;
+}
+
+.calendar-day.inactive {
+    visibility: hidden;
+    border: none;
+}
+
+.event-count {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background-color: #28a745;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.event-tooltip {
+    display: none;
+    position: absolute;
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    min-width: 200px;
+    line-height: 1.4;
+}
+
+.event-type-Academic { background-color: #ADD8E6; }
+.event-type-Sports { background-color: #FFC0CB; }
+.event-type-Music { background-color: #8A2BE2; }
+.event-type-General { background-color: #90EE90; }
+
+.query-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #5E2C04;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out;
+    z-index: 10;
+}
+
+.query-container:hover {
+    transform: scale(1.05);
+}
+
+.contact-info-popup {
+    display: none;
+    position: absolute;
+    top: 35px;
+    right: 0;
+    width: 200px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    z-index: 20;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.contact-info-popup p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #333;
+    line-height: 1.5;
+}
+
+.contact-info-popup a {
+    color: #5E2C04;
+    text-decoration: none;
+}
+
+.contact-info-popup a:hover {
+    text-decoration: underline;
+}
+/* This is a test for me */
+
+/* Styles for forms on the create_event page */
+.form-group .phone-input-container {
+    display: flex;
+    align-items: center;
+    border: 2px solid #b4c8d0;
+    border-radius: 12px;
+    padding: 10px 14px;
+}
+.form-group .phone-input-container .phone-prefix {
+    font-size: 1.1rem;
+    color: #555;
+    margin-right: 5px;
+}
+.form-group .phone-input-container input {
+    border: none;
+    padding: 0;
+    font-size: 1.1rem;
+    width: 100%;
+    outline: none;
+}
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+.form-check input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Styles for the generated link container */
+.generated-link-container {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.generated-link-container h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.generated-link-container p {
+    margin: 5px 0 10px;
+}
+
+.link-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.generated-link {
+    font-family: monospace;
+    font-size: 1rem;
+    color: #007bff;
+    word-break: break-all;
+}
+
+.copy-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+/* Style for the feed header to position the link */
+.feed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Style for the new link in the header */
+.header-link {
+    text-decoration: none;
+    color: #000;
+    font-size: 1.2rem;
+    font-weight: bold; /* Make the font bold */
+    padding: 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.header-link:hover {
+    background-color: #f0f2f5;
+}
+
+
+
+/* Style for the header home link */
+.feed-header h1 a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* --- Styles for the Daily Event Modal (Fixes layout issue) --- */
+
+#daily-event-modal {
+    display: none; /* Must be hidden by default */
+    position: fixed; /* Stays in place when scrolling */
+    z-index: 1000; /* Stays on top of everything */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.7); /* Black w/ opacity */
+}
+
+#daily-event-modal .modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* Center modal vertically and horizontally */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Width of the modal content */
+    max-width: 500px; /* Maximum width for clean look */
+    border-radius: 10px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-daily-modal-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-daily-modal-btn:hover,
+.close-daily-modal-btn:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#daily-event-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 15px;
+    padding-right: 10px;
+}
+
+.daily-event-item a {
+    display: block;
+    padding: 8px 0;
+    font-size: 1rem;
+    color: #007bff;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+}
+
+.daily-event-item a:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+
+
+
+/* --- Styles for Calendar Tooltip --- */
+.event-tooltip {
+    display: none;
+    position: absolute;
+    background-color: #333; /* Dark background */
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    z-index: 5000; /* Extremely high z-index to ensure it is always on top */
+    pointer-events: none; /* Allows clicks to pass through the tooltip to elements underneath */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    min-width: 200px;
+    line-height: 1.4;
+}
+
+
+/* Styling for the Follow button when it is in the 'following' state */
+.follow-btn.following {
+    /* Change background to light green */
+    background-color: #A8E890;
+
+    /* Change text to "Following" and use a dark color for readability */
+    color: #333;
+
+    /* Optional: Add a dark border for better definition */
+    border: 1px solid #4CAF50;
+
+    /* Optional: Ensure the cursor still looks clickable */
+    cursor: default;
+}
+
+/* Optional: You may want to adjust the original follow-btn style if needed */
+.follow-btn {
+    /* ... existing styles for the normal 'Follow' state ... */
+    transition: all 0.2s ease; /* Add a smooth transition for the color change */
+}
+
+
+
+
+
+
+.college-search-container {
+    /* Set this to a flexible display to keep input and button aligned */
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Small gap between input and button */
+    position: relative;
+    z-index: 2;
+    margin-bottom: 10px; /* Add some space below the search bar */
+}
+#collegeSearchInput {
+    flex-grow: 1; /* Allows input to take up most of the space */
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+#collegeSearchButton {
+    /* Style the button to look like just an icon */
+    background: #000; /* Dark background */
+    color: white;
+    border: none;
+    padding: 9px 12px; /* Adjust padding to match input height */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+
+/* Style for the autocomplete dropdown */
+.autocomplete-dropdown {
+    list-style: none;
+    padding: 0;
+    margin: 0; /* Remove default margin */
+    border: 1px solid #ddd;
+    background: #fff;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+
+    /* CRITICAL FIXES FOR POSITIONING: */
+    position: absolute;
+    top: 100%; /* Place it right below the search input */
+    left: 0;
+    z-index: 100; /* Ensure it floats above all other elements */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+} /* <-- END OF DROPDOWN STYLING */
+
+/* Style for the links inside the dynamically generated autocomplete dropdown */
+.autocomplete-dropdown li a {
+    /* Retain original dropdown styles */
+    display: block;
+    padding: 8px 10px;
+    text-decoration: none;
+
+    /* CRITICAL FIX: Set text color to black */
+    color: black;
+    transition: background-color 0.2s;
+}
+
+.autocomplete-dropdown li a:hover {
+    /* Keep hover behavior professional */
+    background-color: #f0f0f0;
+    color: #333; /* Keep text color dark on hover */
+}
+
+    /* CRITICAL FIXES FOR POSITIONING: */
+    position: absolute;
+    top: 100%; /* Place it right below the search input */
+    left: 0;
+    z-index: 100; /* Ensure it floats above all other elements */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure the search input box is what sets the width and position */
+.college-search-container input {
+    width: calc(100% - 30px); /* Adjust based on your button/icon width */
+}
+
+
+/* Override the browser's default link color for college names */
+.college-item .college-name-link {
+    color: black; /* Change to black */
+    text-decoration: none; /* Remove underline */
+    font-weight: 500;
+}
+
+.college-item .college-name-link:hover {
+    color: #333; /* Slightly darker or same color on hover */
+    text-decoration: underline; /* Optional: add underline on hover */
+}
+
+
+.event-college-name {
+    display: block; /* Ensures it starts on its own line */
+    font-size: 0.85rem;
+    color: #65676b; /* Use a medium gray color */
+    margin-top: -3px; /* Pulls it slightly closer to the event name above */
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+
+
+
+
+
+
+
+
+
+/* General style for all form groups */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #1c1e21;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+/* Style for all text inputs, textareas, and select boxes */
+.event-creation-form input[type="text"],
+.event-creation-form input[type="date"],
+.event-creation-form input[type="number"],
+.event-creation-form input[type="file"],
+.event-creation-form textarea,
+.event-creation-form select {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Rounded corners */
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Focus state for professional feel */
+.event-creation-form input:focus,
+.event-creation-form textarea:focus,
+.event-creation-form select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Two-column layout for location/city and state */
+.location-group {
+    display: flex;
+    gap: 20px;
+}
+
+.location-group .form-group {
+    flex: 1; /* Makes city and state fields share the space equally */
+}
+
+/* Style for the Description textarea (where the long text lives) */
+.description-group textarea {
+    min-height: 150px;
+    resize: vertical;
+    white-space: pre-wrap; /* Ensures the placeholder text respects new lines */
+}
+
+
+/* Submit button style */
+.create-event-btn {
+    background-color: #000;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.create-event-btn:hover {
+    background-color: #333;
+}
+
+/* Phone number input container styles */
+.phone-input-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd; /* Match other inputs */
+    border-radius: 8px;
+    padding: 0; /* Remove existing padding */
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
+}
+
+.phone-input-container .phone-prefix {
+    background-color: #f8f8f8;
+    padding: 10px 10px;
+    font-size: 1rem;
+    color: #555;
+    border-right: 1px solid #ddd;
+}
+
+.phone-input-container input {
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Checkbox alignment */
+.form-check {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+.form-check input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+/* Add these styles to your style.css */
+
+/* Target the body specifically for the create event page (or add a unique class to the body tag) */
+body {
+    /* Set a neutral background color that matches your dashboard base */
+    background-color: #f0f2f5;
+    /* Ensure height covers the viewport */
+    min-height: 100vh;
+}
+
+
+/* Styling for the main form wrapper */
+.form-container {
+    max-width: 800px; /* Constrains the width to simulate the middle pane */
+    width: 90%;      /* Ensures responsiveness on smaller screens */
+    margin: 40px auto; /* CRITICAL: Centers the container horizontally and adds vertical padding */
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Styles for the Registrations Table */
+.registration-list-container {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.registration-count {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+.registrations-table {
+    width: 100%;
+    border-collapse: collapse; /* Removes double borders */
+    margin-top: 15px;
+    font-size: 0.95rem;
+}
+
+.registrations-table th,
+.registrations-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+/* Header styling */
+.registrations-table th {
+    background-color: #e4e6eb;
+    color: #1c1e21;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+/* Row hover effect for better UX */
+.registrations-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Link color fix for emails */
+.registrations-table td a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.registrations-table td a:hover {
+    text-decoration: underline;
+}
+
+.no-registrations-message {
+    padding: 20px;
+    text-align: center;
+    color: #65676b;
+}
+
+
+
+
+/* Event Log/Registrations List Page */
+.event-log-item {
+    display: flex;
+    flex-direction: column;
+    padding: 15px 20px;
+}
+
+.event-log-item h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.view-registrations-btn {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.view-registrations-btn:hover {
+    background-color: #0056b3;
+}
+
+
+
+
+/* Styles for the Registrations Table */
+.registration-list-container {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.registration-count {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+.registrations-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.95rem;
+}
+
+.registrations-table th,
+.registrations-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+/* Header styling */
+.registrations-table th {
+    background-color: #e4e6eb;
+    color: #1c1e21;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+/* Row hover effect for better UX */
+.registrations-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Link color fix for emails */
+.registrations-table td a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.registrations-table td a:hover {
+    text-decoration: underline;
+}
+
+
+/* Styling for the new filtered event highlight (Pink) */
+.calendar-day.filtered-event-day {
+    background-color: #ffb6c1; /* Light Pink */
+    color: #880022; /* Darker text for readability */
+    font-weight: bold;
+    border: 1px solid #ff69b4;
+    border-radius: 50%; /* Maintains the rounded look */
+}
+
+
+
+/* Around Line 859: Adjust margins to pull it closer to the calendar */
+.event-filter-trigger {
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    /* REDUCE MARGIN-TOP TO PULL IT UP, REMOVE BORDER-BOTTOM FOR CLEANER LOOK */
+    margin: 0 0 5px 0;
+    border-bottom: none; /* Remove separator line here if you want it tighter */
+}
+
+
+/* Optional: Add a visual cue when hovering */
+.event-filter-trigger:hover {
+    color: #2e1503; /* Change color on hover */
+}
+
+
+
+/* 1. Modal Container (The Backdrop) */
+#filterModal {
+    /* Keep these properties to cover the whole screen and provide backdrop */
+    display: none; /* Controlled by JS; starts hidden */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+
+    /* --- CRITICAL CHANGE FOR CENTERING --- */
+    /* Use display: block or unset the flex properties */
+    display: block;
+}
+
+/* 2. Modal Content (The White Box) */
+#filterModal .modal-content {
+    background-color: #fefefe;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+    /* Center the box horizontally by setting fixed width and margins */
+    width: 90%;
+    max-width: 400px;
+
+    /* CRITICAL CHANGE: Set margin to auto for horizontal centering
+       and adjust top margin to place it nicely in the viewport center. */
+    margin: 10% auto 0 auto; /* 10% from the top, and horizontally centered */
+
+    position: relative;
+}
+
+/* 3. Filter Controls Inside Modal (Styling the content) */
+.filter-controls-modal {
+    padding-top: 15px;
+}
+
+.filter-controls-modal .filter-group {
+    margin-bottom: 15px;
+}
+
+/* 4. Close Button */
+#closeFilterModal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 20px;
+}
+
+#closeFilterModal:hover,
+#closeFilterModal:focus {
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+
+
+
+
+/* --- PROFILE PAGE STYLING (profile.html) --- */
+
+.profile-container {
+    /* Ensures the profile content takes up the main feed area */
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profile-card {
+    /* Mimics the card/section structure seen on the dashboard */
+    background-color: #ffffff; /* White card background */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.profile-card h1 {
+    font-size: 1.8em;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+/* Profile Summary Section */
+.profile-header-summary {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px dashed #ddd;
+}
+
+.large-profile-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #007bff; /* Primary brand color border */
+    margin-bottom: 15px;
+}
+
+.profile-header-summary h2 {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.email-detail, .college-detail, .member-since {
+    color: #666;
+    font-size: 0.95em;
+    margin-bottom: 5px;
+}
+
+.fa-envelope, .fa-graduation-cap {
+    margin-right: 8px;
+    color: #007bff;
+}
+
+/* Form Editing Section */
+.profile-edit-section h3 {
+    font-size: 1.4em;
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.profile-update-form fieldset {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 25px;
+}
+
+.profile-update-form legend {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #007bff;
+    padding: 0 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Ensures padding doesn't widen the input */
+}
+
+/* Styling for the current profile icon display */
+.current-file {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.current-file img {
+    margin-right: 5px;
+}
+
+.primary-btn {
+    /* Use your existing button style if you have one */
+    background-color: #28a745; /* Success color for save */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+.primary-btn:hover {
+    background-color: #218838;
+}
+
+/* Message styling (for Django success/error messages) */
+.messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.messages li {
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.messages .success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.messages .error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

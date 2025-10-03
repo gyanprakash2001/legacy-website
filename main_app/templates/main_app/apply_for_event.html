@@ -1,0 +1,9 @@
+
+    <div class="form-container">
+        <h1>Apply for {{ event.event_name }}</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit Application</button>
+        </form>
+    </div>

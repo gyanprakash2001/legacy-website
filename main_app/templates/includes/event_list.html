@@ -1,0 +1,23 @@
+{% for event in upcoming_events %}
+    <div class="event-item">
+        <a href="{% url 'apply_for_event' event.event_link_key %}" class="event-name-link">
+            <h3>{{ event.event_name }}</h3>
+        </a>
+        <p class="event-details">{{ event.event_type.name }} - {{ event.location }}</p>
+        <p class="event-time">{{ event.date_time|date:"F d, Y P" }}</p>
+        <p class="event-details">Fees: {% if event.registration_fees %}{{ event.registration_fees }}{% else %}Free{% endif %}</p>
+
+        <div class="query-container"
+             data-email="{{ event.organizer__email }}"
+             data-phone="{{ event.phone_number }}"
+             data-show-phone="{% if event.show_phone_number_on_query %}true{% else %}false{% endif %}">
+            <span class="query-link">Query?</span>
+            <div class="contact-info-popup">
+                <p>Email: <a href="mailto:{{ event.organizer__email }}">{{ event.organizer__email }}</a></p>
+                <p class="phone-info" style="display: none;">Phone: {{ event.phone_number }}</p>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <p>No upcoming events matching your filter criteria.</p>
+{% endfor %}

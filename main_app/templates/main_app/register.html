@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="signup-page">
+        <header>
+            <div class="logo">Legacy</div>
+        </header>
+        <div class="columns">
+            <div class="left-pane">
+                <div>
+                    <h1 class="signup-title">
+                        Register
+                    </h1>
+                    <form method="post" class="signup-form" autocomplete="off" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form.username.label_tag }}
+                            {{ form.username }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password.label_tag }}
+                            {{ form.password }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password_confirm.label_tag }}
+                            {{ form.password_confirm }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_college_name_select2">College Name:</label>
+                            <select name="college_name" id="id_college_name_select2" class="form-control" required>
+                                <option value="">Select a college</option>
+                                {% for college in colleges %}
+                                    <option value="{{ college.id }}">{{ college.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            {{ form.is_alumni.label_tag }}
+                            {{ form.is_alumni }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.profile_icon.label_tag }}
+                            {{ form.profile_icon }}
+                        </div>
+                        <button type="submit" class="register-btn">Register</button>
+                    </form>
+                </div>
+            </div>
+            <div class="right-pane">
+                <div class="signup-image-card">
+                    <img src="{% static 'images/dog_plane.jpg' %}" alt="Dog and Plane" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#id_college_name_select2').select2({
+                ajax: {
+                    url: '/college-autocomplete/',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term,
+                            page: params.page
+                        };
+                    },
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    text: item.name,
+                                    id: item.id
+                                }
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 2,
+                placeholder: "Search for a college",
+                allowClear: true
+            });
+        });
+    </script>
+</body>
+</html>

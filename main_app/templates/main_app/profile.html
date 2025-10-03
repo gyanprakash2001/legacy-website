@@ -1,0 +1,70 @@
+{% extends "main_app/base.html" %} 
+{% load static %}
+
+{% block title %}My Profile - LEGACY{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <h1>My Profile</h1>
+
+        <div class="profile-header-summary">
+            <img src="{{ current_user_profile.profile_icon.url }}" alt="{{ request.user.username }}'s Profile Icon" class="large-profile-icon">
+            <h2>{{ request.user.username }}</h2>
+            <p class="email-detail"><i class="fa-solid fa-envelope"></i> {{ request.user.email }}</p>
+            <p class="college-detail"><i class="fa-solid fa-graduation-cap"></i> {{ current_user_profile.college_name }}</p>
+            <p class="member-since">Member since: {{ request.user.date_joined|date:"M d, Y" }}</p>
+        </div>
+        
+        <div class="profile-edit-section">
+            <h3>Update Details</h3>
+            
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="profile-update-form">
+                {% csrf_token %}
+
+                <fieldset>
+                    <legend>Core Account Info</legend>
+                    {% for field in user_form %}
+                        <div class="form-group">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% for error in field.errors %}
+                                <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </fieldset>
+
+                <fieldset>
+                    <legend>Profile Details</legend>
+                    {% for field in profile_form %}
+                        <div class="form-group">
+                            {{ field.label_tag }}
+                            {% if field.name == 'profile_icon' %}
+                                <p class="current-file">Current: <img src="{{ current_user_profile.profile_icon.url }}" alt="Icon" style="width: 50px; height: 50px; border-radius: 50%;"></p>
+                                <label for="{{ field.id_for_label }}">Change Icon:</label>
+                                {{ field }}
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </fieldset>
+
+                <button type="submit" class="primary-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+    <div class="login-page">
+        <header>
+            <div class="logo">Legacy</div>
+        </header>
+        <div class="columns">
+            <div class="left-pane">
+                <div>
+                    <h1 class="login-title">
+                        Log In
+                    </h1>
+                    <form method="post" class="login-form">
+                        {% csrf_token %}
+                        {{ form.username.label_tag }}
+                        {{ form.username }}
+                        {{ form.password.label_tag }}
+                        {{ form.password }}
+                        <button type="submit" class="login-btn">Log In</button>
+                    </form>
+                </div>
+            </div>
+            <div class="right-pane">
+                <div class="login-image-card">
+                    <img src="{% static 'images/dog_plane.jpg' %}" alt="Dog and Plane" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

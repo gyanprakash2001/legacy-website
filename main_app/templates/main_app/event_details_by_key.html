@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ event.event_name }} - LEGACY</title>
+</head>
+<body>
+    <h1>{{ event.event_name }}</h1>
+    <p><strong>Event Type:</strong> {{ event.event_type }}</p>
+    <p><strong>Location:</strong> {{ event.location }}</p>
+    <p><strong>Date & Time:</strong> {{ event.date_time }}</p>
+    <p><strong>Description:</strong></p>
+    <p>{{ event.description }}</p>
+
+    <hr>
+
+    <a href="{% url 'apply_for_event' event.event_link_key %}">
+        <button type="button">Apply for this Event</button>
+    </a>
+
+    <br>
+    <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+</body>
+</html>

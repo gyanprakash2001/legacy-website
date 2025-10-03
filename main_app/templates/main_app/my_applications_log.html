@@ -1,0 +1,40 @@
+{% extends "main_app/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="registration-page-container">
+    <div class="registration-header">
+        <h1>My Applications Log</h1>
+        <a href="{% url 'dashboard' %}" class="back-to-dashboard-link">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="applications-list">
+        {% for application in user_applications %}
+        <div class="application-card">
+            
+            <h2>{{ application.event.event_name }}</h2>
+            
+            <p><strong>Event Type:</strong> {{ application.event.event_type.name }}</p>
+            <p><strong>Date:</strong> {{ application.event.date_time|date:"F d, Y P" }}</p>
+            <p><strong>Location:</strong> {{ application.event.location }}</p>
+            
+            <p class="application-status">
+                <strong>Your Application Status:</strong> 
+                <span class="status-{{ application.status|lower }}">{{ application.status|default:"Pending" }}</span>
+            </p>
+
+            <a href="{% url 'event_details' event_title=application.event.event_name %}" class="btn btn-primary view-registrations-btn">
+                View Application Status
+            </a>
+        </div>
+        {% empty %}
+        <div class="no-applications">
+            <p>You have not submitted any event applications yet.</p>
+            <p>Go to the <a href="{% url 'dashboard' %}">Home</a> page to find events!</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock content %}
