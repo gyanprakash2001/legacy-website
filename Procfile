@@ -1,1 +1,1 @@
-web: gunicorn legacy_website.wsgi --log-file -
+web: python -m gunicorn legacy_website.wsgi --log-file -
