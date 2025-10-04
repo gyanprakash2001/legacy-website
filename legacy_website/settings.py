@@ -13,10 +13,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --- CLOUDINARY INITIALIZATION FIX ---
 # This block ensures the Cloudinary library initializes itself immediately
 # using the CLOUDINARY_URL environment variable, resolving the 404 image issue.
-if os.environ.get('CLOUDINARY_URL'):
-    cloudinary.config(
-        secure=True
-    )
+# This entire block is now REMOVED/COMMENTED OUT to rely on explicit settings below
+# and prevent conflicts.
+# if os.environ.get('CLOUDINARY_URL'):
+#     cloudinary.config(
+#         secure=True
+#     )
 # --------------------------------------
 
 # Quick-start development settings - unsuitable for production
@@ -24,7 +26,7 @@ if os.environ.get('CLOUDINARY_URL'):
 SECRET_KEY = 'django-insecure-h*(dfrl3dit^30qbe=v5+10j4-ns*_bt)k5uu84%$ma4%a2-1z'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False   
+DEBUG = False
 
 # Ensure all hosts are single strings separated by commas
 ALLOWED_HOSTS = ['*']
@@ -134,13 +136,17 @@ STATICFILES_DIRS = [
 # 1. Tell Django to use Cloudinary for all file storage.
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# 2. CRITICAL: Pass the URL to the library for initialization.
-CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+# 2. CRITICAL: Define individual credentials for robust upload authentication.
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
+CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
 
 # 3. Ensure images are served securely.
 CLOUDINARY_API_SECURE = True
 
-# NOTE: MEDIA_URL and MEDIA_ROOT are removed/commented to prevent conflict.
+# NOTE: CLOUDINARY_URL is no longer needed here if the three credentials above are set.
+# CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
