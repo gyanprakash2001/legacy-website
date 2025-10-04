@@ -56,7 +56,7 @@ class EventApplicationDetails(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    college_name = models.CharField(max_length=200)
+    college_name = models.CharField(max_length=500)
     whatsapp_number = models.CharField(max_length=20, null=True, blank=True)
     email_id = models.EmailField()
     applied_at = models.DateTimeField(auto_now_add=True)
@@ -69,7 +69,7 @@ class EventApplicationDetails(models.Model):
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
-    college_name = models.CharField(max_length=100)
+    college_name = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -79,7 +79,7 @@ class Follow(models.Model):
         return f"{self.follower.username} follows {self.college_name}"
 
 class College(models.Model):
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=500, unique=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     def __str__(self):
         return self.name
