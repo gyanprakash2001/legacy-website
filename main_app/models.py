@@ -7,7 +7,12 @@ from django.dispatch import receiver
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     college_name = models.CharField(max_length=500)
-    profile_icon = models.ImageField(upload_to='profile_icons/', default='default_icon.png')
+    profile_icon = models.ImageField(
+        upload_to='profile_icons/',
+        default='default_icon.png',
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return self.user.username
