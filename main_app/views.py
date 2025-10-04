@@ -18,6 +18,22 @@ from django.views.decorators.http import require_POST
 
 
 
+# main_app/views.py
+
+from django.conf import settings # <-- Ensure this is imported
+
+# ... inside your dashboard view function:
+def dashboard(request):
+    # --- TEMPORARY DIAGNOSTIC CODE ---
+    # This will crash the app and print the value of the file storage setting.
+    raise ValueError(f"DF_STORAGE_SETTING: {settings.DEFAULT_FILE_STORAGE}")
+    # ---------------------------------
+
+    # ... rest of your view code ...
+
+
+
+
 
 def index(request):
     return render(request, 'main_app/index.html')
