@@ -18,12 +18,6 @@ import cloudinary # CRITICAL: MUST BE AT THE TOP FOR CONFIGURATION
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- CLOUDINARY INITIALIZATION ---
-# This block must run before INSTALLED_APPS to set the configuration correctly.
-if os.environ.get('CLOUDINARY_URL'):
-    cloudinary.config(
-        secure=True
-    )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -152,20 +146,21 @@ STATICFILES_DIRS = [
 
 
 # -------------------------------------------------------------
-# MEDIA FILE STORAGE (CLOUDINARY)
+# MEDIA FILE STORAGE (CLOUDINARY) - FINAL CLEAN CONFIG
 # -------------------------------------------------------------
 
-# Tell Django to use Cloudinary for all user-uploaded files
+# 1. Tell Django to use Cloudinary for all file storage.
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Set the CLOUDINARY_URL environment variable as the configuration source
+# 2. Tell the cloudinary library to read the single environment variable.
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+
+# 3. Ensure images are served securely.
 CLOUDINARY_API_SECURE = True
 
-# We must remove local media settings since they conflict with CLOUDINARY
-# MEDIA_URL = '/media/'  # This URL will now be served by Cloudinary
-# MEDIA_ROOT = BASE_DIR / 'media' # This local directory is no longer used
-
+# 4. Remove conflicting local settings (they must be deleted or commented out)
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
