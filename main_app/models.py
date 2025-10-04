@@ -4,14 +4,17 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+# In main_app/models.py
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     college_name = models.CharField(max_length=500)
     profile_icon = models.ImageField(
         upload_to='profile_icons/',
-        null=True,
+        default='default_icon.png',
+        null=True,     # Keep this so we can clear the record
         blank=True
     )
+    # ... rest of the model
 
     def __str__(self):
         return self.user.username
