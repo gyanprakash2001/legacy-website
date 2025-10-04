@@ -24,7 +24,7 @@ if os.environ.get('CLOUDINARY_URL'):
 SECRET_KEY = 'django-insecure-h*(dfrl3dit^30qbe=v5+10j4-ns*_bt)k5uu84%$ma4%a2-1z'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Ensure all hosts are single strings separated by commas
 ALLOWED_HOSTS = ['*']
@@ -86,6 +86,7 @@ DATABASES = {
         # CRITICAL: Looks for the DATABASE_URL environment variable from Render
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
+        engine='django.db.backends.postgresql'
     )
 }
 

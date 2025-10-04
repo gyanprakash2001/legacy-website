@@ -9,7 +9,11 @@
         <h1>My Profile</h1>
 
         <div class="profile-header-summary">
-            <img src="{{ current_user_profile.profile_icon.url }}" alt="{{ request.user.username }}'s Profile Icon" class="large-profile-icon">
+            {% if current_user_profile.profile_icon %}
+                <img src="{{ current_user_profile.profile_icon.url }}" alt="{{ request.user.username }}'s Profile Icon" class="large-profile-icon">
+            {% else %}
+                <img src="{% static 'images/placeholder.png' %}" alt="Placeholder Icon" class="large-profile-icon">
+            {% endif %}
             <h2>{{ request.user.username }}</h2>
             <p class="email-detail"><i class="fa-solid fa-envelope"></i> {{ request.user.email }}</p>
             <p class="college-detail"><i class="fa-solid fa-graduation-cap"></i> {{ current_user_profile.college_name }}</p>
@@ -49,7 +53,11 @@
                         <div class="form-group">
                             {{ field.label_tag }}
                             {% if field.name == 'profile_icon' %}
-                                <p class="current-file">Current: <img src="{{ current_user_profile.profile_icon.url }}" alt="Icon" style="width: 50px; height: 50px; border-radius: 50%;"></p>
+                                {% if current_user_profile.profile_icon %}
+                                    <p class="current-file">Current: <img src="{{ current_user_profile.profile_icon.url }}" alt="Icon" style="width: 50px; height: 50px; border-radius: 50%;"></p>
+                                {% else %}
+                                    <p class="current-file">Current: No Image Uploaded</p>
+                                {% endif %}
                                 <label for="{{ field.id_for_label }}">Change Icon:</label>
                                 {{ field }}
                             {% else %}

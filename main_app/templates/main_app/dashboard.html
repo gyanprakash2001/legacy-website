@@ -65,7 +65,7 @@
             {% endif %}
         </div>
                     <div class="start-post-container">
-                <img src="{{ request.user.userprofile.profile_icon.url }}" alt="Profile Picture" class="profile-pic">
+                <img src="{% if request.user.userprofile.profile_icon %}{{ request.user.userprofile.profile_icon.url }}{% else %}{% static 'images/default_profile_icon.png' %}{% endif %}" alt="Profile Picture" class="profile-pic">
                 <a href="{% url 'create_post' %}" class="start-post-link">
                     <input type="text" placeholder="Share your event's memories" readonly>
                     <button type="button" class="post-button-redirect">Post</button>
@@ -76,7 +76,7 @@
                 <div class="post-item">
                     <div class="post-header">
                         <div class="post-user-info">
-                            <img src="{{ post.author.userprofile.profile_icon.url }}" alt="Profile icon" class="post-profile-icon">
+                            <img src="{% if post.author.userprofile.profile_icon %}{{ post.author.userprofile.profile_icon.url }}{% else %}{% static 'images/default_profile_icon.png' %}{% endif %}" alt="Profile icon" class="post-profile-icon">
                             <div class="user-details">
                                 <div class="username-and-college">
                                     <span class="username">{{ post.author.username }}</span>

@@ -704,21 +704,3 @@ def profile_view(request):
 
     return render(request, 'main_app/profile.html', context)
 
-
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import user_passes_test
-from django.db import connection
-
-
-@user_passes_test(lambda u: u.is_superuser)
-def wipe_corrupt_data(request):
-    """Uses TRUNCATE to quickly clear corrupted Post and Event data."""
-    if request.user.is_superuser:
-        with connection.cursor() as cursor:
-            # CRITICAL: TRUNCATE bypasses ORM safety checks and is aggressive.
-            # This is necessary because the ORM delete() is failing.
-            cursor.execute("TRUNCATE TABLE main_app_post RESTART IDENTITY CASCADE;")
-            cursor.execute("TRUNCATE TABLE main_app_event RESTART IDENTITY CASCADE;")
-
-    # Redirect to the Dashboard for confirmation
-    return redirect('dashboard')
