@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-h*(dfrl3dit^30qbe=v5+10j4-ns*_bt)k5uu84%$ma4%a2-1z'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False   
 
 # Ensure all hosts are single strings separated by commas
 ALLOWED_HOSTS = ['*']
@@ -164,6 +164,6 @@ CLOUDINARY_API_SECURE = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = 'dashboard_force_reload' # TEMPORARY VALUE
-#LOGIN_REDIRECT_URL = 'dashboard'
+
+LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = '/login/'
