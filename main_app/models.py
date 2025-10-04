@@ -9,7 +9,6 @@ class UserProfile(models.Model):
     college_name = models.CharField(max_length=500)
     profile_icon = models.ImageField(
         upload_to='profile_icons/',
-        default='',
         null=True,
         blank=True
     )
