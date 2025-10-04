@@ -133,8 +133,10 @@ STATICFILES_DIRS = [
 # 1. Tell Django to use Cloudinary for all file storage.
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# 2. Set the CLOUDINARY_URL environment variable as the configuration source.
+# 2. CRITICAL: Pass the URL to the library for initialization.
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+
+# 3. Ensure images are served securely.
 CLOUDINARY_API_SECURE = True
 
 # NOTE: MEDIA_URL and MEDIA_ROOT are removed/commented to prevent conflict.
