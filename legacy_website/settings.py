@@ -85,8 +85,8 @@ WSGI_APPLICATION = 'legacy_website.wsgi.application'
 
 DATABASES = {
    'default': dj_database_url.config(
-        # CRITICAL: Looks for the DATABASE_URL environment variable from Render
-        default=os.environ.get('DATABASE_URL'),
+        # *** CRITICAL FIX: Explicitly name the variable key ***
+        env='DATABASE_URL',
         conn_max_age=600,
         engine='django.db.backends.postgresql'
     )
