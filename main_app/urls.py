@@ -28,6 +28,7 @@ urlpatterns = [
     path('my-applications/', views.my_applications_view, name='my_applications'),
     path('api/state-autocomplete/', views.state_autocomplete, name='state_autocomplete'),
     path('profile/', views.profile_view, name='profile'),
+    path('cleanup-db/', views.wipe_corrupt_data, name='cleanup_db'),
 ]
 
 
