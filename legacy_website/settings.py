@@ -129,6 +129,10 @@ STATICFILES_DIRS = [
 ]
 
 
+# legacy_website/settings.py
+
+# ... (around line 150)
+
 # -------------------------------------------------------------
 # MEDIA FILE STORAGE (CLOUDINARY) - FINAL CLEAN CONFIG
 # -------------------------------------------------------------
@@ -136,14 +140,21 @@ STATICFILES_DIRS = [
 # 1. Tell Django to use Cloudinary for all file storage.
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# 2. CRITICAL: Define individual credentials for robust upload authentication.
+# 2. Define individual credentials (already added for uploads).
 CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
 CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
 CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
 
-# 3. Ensure images are served securely.
-CLOUDINARY_API_SECURE = True
+# 3. CRITICAL NEW FIX: Construct the CLOUDINARY_URL from the individual components.
+#    This variable is often required by the storage backend to serve images.
+CLOUDINARY_URL = 'cloudinary://{}:{}@{}'.format(
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+    CLOUDINARY_CLOUD_NAME
+)
 
+# 4. Ensure images are served securely.
+CLOUDINARY_API_SECURE = True
 # NOTE: CLOUDINARY_URL is no longer needed here if the three credentials above are set.
 # CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
 
