@@ -83,14 +83,29 @@ WSGI_APPLICATION = 'legacy_website.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# legacy_website/settings.py
+
+
+# legacy_website/settings.py
+
+# ... (around line 91)
+
 DATABASES = {
-   'default': dj_database_url.config(
-        # *** CRITICAL FIX: Explicitly name the variable key ***
+    'default': dj_database_url.config(
+        # CRITICAL FIX: Pass the SQLite fallback as a URL string to the 'default' parameter.
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+
+        # Look for the live DB URL in the environment
         env='DATABASE_URL',
         conn_max_age=600,
-        engine='django.db.backends.postgresql'
+        #engine='django.db.backends.postgresql',
     )
 }
+
+
+
+
+
 
 
 # Password validation... (your original settings are here)
@@ -136,7 +151,7 @@ STATICFILES_DIRS = [
 # -------------------------------------------------------------
 # MEDIA FILE STORAGE (CLOUDINARY) - FINAL CLEAN CONFIG
 # -------------------------------------------------------------
-
+#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # 1. Tell Django to use Cloudinary for all file storage.
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
