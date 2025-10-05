@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Legacy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <style>
+        /* CSS to center the choice container cleanly in the viewport */
+        .choice-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            background-color: #e6e6fa;
+        }
+
+        .choice-container {
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 90%;
+        }
+
+        h1 {
+            font-family: 'Rammetto One', cursive;
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .choice-button {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        /* Styling the Email Button (Primary Blue) */
+        .email-button {
+            background-color: #3b5998;
+            color: white;
+        }
+
+        /* Styling the Google Button (White with Border) */
+        .google-button {
+            background-color: white;
+            color: #444; /* Changed text color for better contrast */
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .google-icon {
+            font-size: 18px;
+            margin-right: 10px;
+            color: #4285F4; /* Placeholder color */
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #aaa;
+            margin: 20px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #eee;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="choice-page">
+        <div class="choice-container">
+            <h1>Welcome to Legacy</h1>
+            <p class="subtitle">Join the community - it's fast and easy.</p>
+
+            <a href="{% url 'register' %}" class="choice-button email-button">
+                SIGN UP WITH EMAIL
+            </a>
+
+            <div class="divider">Or</div>
+
+            <a href="{% url 'social_login_start' %}" class="choice-button google-button">
+                <span class="google-icon">&#x2690;</span>
+                SIGN UP WITH GOOGLE
+            </a>
+
+            <p style="margin-top: 20px; font-size: 0.9em; color: #666;">
+                Already have an account? <a href="{% url 'login' %}">Log In</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Profile Setup</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <style>
+        /* CSS for the Blurring/Locking Effect (If not in style.css) */
+
+        /* The entire signup-page/columns structure now acts as the blurred background */
+        /* To create the full-screen lock and blur without modifying existing classes,
+           we will ensure the body is covered and then rely on the JS warning. */
+
+        /* Optional: Add a subtle overlay/blur directly to the page content container
+           if you need a visual enforcement cue. */
+
+        .signup-page {
+            /* If this is the main container, you can add padding or alignment here */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center the content vertically */
+        }
+
+        .columns {
+            /* Ensure the form pane is prominent and the image pane acts as background */
+            align-items: center;
+        }
+
+        /* Instruction text styling */
+        .setup-instruction {
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="signup-page">
+        <header>
+            <div class="logo">Legacy</div>
+        </header>
+
+        <div class="columns">
+            <div class="left-pane">
+                <div>
+                    <h1 class="signup-title">
+                        Mandatory Setup
+                    </h1>
+
+                    <form method="post" class="signup-form" autocomplete="off" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <p class="setup-instruction">
+                            You're almost done! Please provide your **Phone Number** and a **Profile Icon** to proceed to the Dashboard.
+                        </p>
+
+                        <div class="form-group">
+                            {{ form.phone_number.label_tag }}
+                            {{ form.phone_number }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.profile_icon.label_tag }}
+                            {{ form.profile_icon }}
+                            </div>
+
+                        <button type="submit" class="register-btn">Complete Setup and Continue</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="right-pane">
+                <div class="signup-image-card">
+                    <img src="{% static 'images/dog_plane.jpg' %}" alt="Dog and Plane" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+        // CRITICAL: This JavaScript will warn the user if they try to close the tab or navigate away.
+        window.addEventListener('beforeunload', function (e) {
+            // Check if the form has been successfully submitted (or if the user is logged out).
+            // Since this page only loads when setup_complete is False, we enforce the lock.
+
+            // Modern browsers often ignore custom text, but the dialog box is enforced.
+            var confirmationMessage = 'Wait! You must complete your profile setup before leaving the page. Are you sure you want to exit?';
+            (e || window.event).returnValue = confirmationMessage;
+            return confirmationMessage;
+        });
+    </script>
+</body>
+</html>

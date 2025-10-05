@@ -14,24 +14,35 @@ class MultiFileInput(ClearableFileInput):
         self.attrs['multiple'] = 'multiple'
 
 
+# main_app/forms.py
+
 class UserRegistrationForm(forms.ModelForm):
-    # This field now uses the new College model to get its choices
-    college_name = forms.ModelChoiceField(
-        queryset=College.objects.all(),
-        to_field_name='name',
-        label='College Name'
-    )
-    profile_icon = forms.FileField(label='Profile Icon', required=False)
+    # No changes to the fields visible to the user: email, password, name
 
     # Password confirmation field
     password_confirm = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name']
+        # Fields: email, password, first_name, last_name
+        fields = ['email', 'password', 'first_name', 'last_name']
         widgets = {
             'password': forms.PasswordInput(),
         }
+
+    # ... (Keep the clean_email, clean_password_confirm, and save methods as they are correct)
+
+    # --- NEW: Method to enforce email as username ---
+    def clean_email(self):
+        email = self.cleaned_data['email']
+
+        # Check if email is already taken (Django's default check still runs, but this is a good custom safeguard)
+        if User.objects.filter(username=email).exists():
+            raise ValidationError("A user with that email already exists.")
+
+        # Crucially, set the username field to the email address
+        self.cleaned_data['username'] = email
+        return email
 
     def clean_password_confirm(self):
         password = self.cleaned_data.get('password')
@@ -43,6 +54,11 @@ class UserRegistrationForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password"])
+
+        # Ensure username is set to email before saving (redundant but safe)
+        if 'username' in self.cleaned_data:
+            user.username = self.cleaned_data['username']
+
         if commit:
             user.save()
         return user
@@ -139,3 +155,62 @@ class UserProfileUpdateForm(forms.ModelForm):
         model = UserProfile
         # We only allow changing college_name and profile_icon
         fields = ['college_name', 'profile_icon']
+
+
+# main_app/forms.py
+
+# ... (ensure User is imported: from django.contrib.auth.models import User)
+
+class MandatoryProfileForm(forms.ModelForm):
+    """Form for collecting mandatory phone number, college name, and optional profile icon."""
+
+    # NEW: Add First Name and Last Name fields for users (especially social) who might not have set them
+    first_name = forms.CharField(max_length=150, required=True, label='First Name')
+    last_name = forms.CharField(max_length=150, required=True, label='Last Name')
+
+    # College Name remains mandatory (ModelChoiceField confirmed in Step 2 of previous convo)
+    college_name = forms.ModelChoiceField(
+        queryset=College.objects.all().order_by('name'),
+        to_field_name='name',
+        label='College Name',
+        required=True  # Mandatory
+    )
+
+    # Phone number remains mandatory
+    phone_number = forms.CharField(max_length=15, required=True, label='Mobile Number')
+
+    # Profile Icon is now OPTIONAL
+    profile_icon = forms.FileField(label='Profile Icon (Optional)', required=False)  # <--- MADE OPTIONAL
+
+    class Meta:
+        model = UserProfile
+        # Only use fields from UserProfile model
+        fields = ('college_name', 'phone_number', 'profile_icon')
+
+        # --- NEW: Custom __init__ and save methods to handle User fields (first_name/last_name) ---
+
+    def __init__(self, *args, **kwargs):
+        # 1. Pop the User instance (if available) before calling super()
+        user_instance = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # 2. Pre-fill name fields from the User instance
+        if user_instance:
+            self.fields['first_name'].initial = user_instance.first_name
+            self.fields['last_name'].initial = user_instance.last_name
+
+        # 3. Add the User model fields (first_name, last_name) to the form's fields list (non-model fields)
+        # Note: We manually add them here since they are not part of UserProfile.Meta.fields
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+
+        # CRITICAL: Manually update the linked User instance before saving the profile
+        user = profile.user
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.save()  # Save the User model updates
+
+        if commit:
+            profile.save()  # Save the UserProfile model updates
+        return profile

@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
@@ -14,8 +15,9 @@ from .models import Event, Post, UserProfile, MediaFile, EventApplicationDetails
 from .forms import UserRegistrationForm, PostForm, EventCreationForm, EventApplicationForm, UserUpdateForm, UserProfileUpdateForm
 from datetime import datetime
 from django.views.decorators.http import require_POST
-
-
+from .decorators import profile_setup_required
+from .forms import MandatoryProfileForm
+from .models import UserProfile, College
 
 
 
@@ -23,37 +25,6 @@ from django.views.decorators.http import require_POST
 def index(request):
     return render(request, 'main_app/index.html')
 
-
-def register(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST, request.FILES)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.save()
-
-            college_name_obj = form.cleaned_data.get('college_name')
-            profile_icon = request.FILES.get('profile_icon')
-
-            UserProfile.objects.create(
-                user=user,
-                college_name=college_name_obj.name,
-                profile_icon=profile_icon
-            )
-
-            try:
-                Follow.objects.create(follower=user, college_name=college_name_obj.name)
-            except IntegrityError:
-                pass
-
-            login(request, user)
-            messages.success(request, 'Account created successfully!')
-            return redirect('dashboard')
-    else:
-        form = UserRegistrationForm()
-
-    colleges = College.objects.all().order_by('name')
-    return render(request, 'main_app/register.html', {'form': form, 'colleges': colleges})
 
 
 def login_view(request):
@@ -93,6 +64,26 @@ def create_post(request):
 @login_required
 def dashboard(request):
     user = request.user
+    show_setup_modal = False
+    setup_form = None # Initialize setup_form
+
+    # --- NEW CRITICAL: Check Profile Completion Status ---
+    try:
+        user_profile = user.userprofile
+        if not user_profile.setup_complete:
+            # 1. Profile is incomplete: Activate the modal flag
+            show_setup_modal = True
+
+            # 2. Instantiate the Mandatory Setup Form
+            # Pass the user instance to the form's __init__ method
+            # for pre-filling name fields (Action B from Step 1)
+            setup_form = MandatoryProfileForm(instance=user_profile, user=user)
+
+    except UserProfile.DoesNotExist:
+        # Safety check: If profile doesn't exist (shouldn't happen after registration),
+        # force the modal and try to instantiate the form without a profile instance (optional handling)
+        show_setup_modal = True
+        setup_form = MandatoryProfileForm(user=user)
 
     # 1. Get the list of college names the user is following via the Follow model
     followed_college_names = list(Follow.objects.filter(follower=user).values_list('college_name', flat=True))
@@ -154,9 +145,14 @@ def dashboard(request):
         'upcoming_events': upcoming_events,
         'suggested_colleges': suggested_colleges,
         'categories_with_types': categories_with_types,
+
+        # --- NEW CONTEXT FOR MODAL ---
+        'show_setup_modal': show_setup_modal,
+        'setup_form': setup_form, # Pass the instantiated form
     }
 
     return render(request, 'main_app/dashboard.html', context)
+
 
 @login_required
 def create_event(request):
@@ -705,3 +701,171 @@ def profile_view(request):
 
     return render(request, 'main_app/profile.html', context)
 
+
+
+# main_app/views.py
+
+# main_app/views.py
+
+@login_required
+def mandatory_profile_setup_view(request):
+    user = request.user
+
+    # Check if UserProfile exists before proceeding
+    try:
+        user_profile = user.userprofile
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile missing.")
+        return redirect('dashboard')
+
+    # 1. Redirect if setup is already complete
+    if user_profile.setup_complete:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        # 2. Instantiate form with POST data, FILES, and instance
+        # NOTE: Pass 'user' instance to the form's __init__ for name handling
+        form = MandatoryProfileForm(request.POST, request.FILES, instance=user_profile, user=user)
+
+        if form.is_valid():
+            # 3. Save User (Names) and UserProfile (College/Phone/Icon)
+            profile = form.save(commit=False)
+            profile.setup_complete = True
+            profile.save()
+
+            messages.success(request, 'Profile setup complete! Welcome to the dashboard.')
+            return redirect('dashboard')
+        else:
+            # 4. Failed POST: Pass errors via message and redirect back to dashboard
+            messages.error(request, 'There were errors in your profile data. Please check and try again.')
+            # The dashboard view will re-instantiate the form with pre-filled data and show errors
+            return redirect('dashboard')
+
+    else:
+        # 5. GET request: User accessed /setup/mandatory/ directly (or from an incorrect link).
+        # We redirect them to the dashboard where the modal handles the display.
+        return redirect('dashboard')
+
+
+
+def register_view(request):
+    if request.method == 'POST':
+        # UserRegistrationForm no longer requires request.FILES since profile_icon is gone
+        form = UserRegistrationForm(request.POST)
+
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']  # Ensure last_name is saved
+
+            # CRITICAL: Since username is populated via clean_email, no need to set it here explicitly
+            user.save()
+
+            # --- CRITICAL: Create Profile & Set Initial Status (SIMPLIFIED) ---
+
+            # NOTE: We use default/null values for mandatory fields, as they will be collected later.
+            UserProfile.objects.create(
+                user=user,
+                college_name="Not Set",  # Use a default placeholder
+                # phone_number is null/blank by default
+                # profile_icon is default by default
+                setup_complete=False  # User is locked out of the dashboard
+            )
+
+            # 1. Log In the User Immediately
+            login(request, user)
+            messages.success(request, 'Account created successfully! Please complete your profile.')
+
+            # 2. Redirect directly to the Mandatory Setup View
+            # We skip college_setup_view, as the College field is now in the mandatory form.
+            return redirect('dashboard')  # <-- DIRECT REDIRECT
+
+    else:
+        form = UserRegistrationForm()
+
+    # Colleges are no longer needed for the simplified registration form
+    # We can remove 'colleges': colleges from the context if we update register.html
+    return render(request, 'main_app/register_form.html', {'form': form})
+
+
+
+def register_choice_view(request):
+    """
+    Presents the user with a choice between email/password registration
+    or social media registration.
+    """
+    return render(request, 'main_app/register_choice.html')
+
+# ... (then, rename your existing 'register' view to 'email_register_view')
+
+
+# main_app/views.py (Add the new view at the end)
+
+from django.shortcuts import render, redirect  # Ensure these are imported
+
+
+def social_login_view(request):
+    """
+    Handles successful social login (after external authentication)
+    and forces the user to the mandatory setup flow if their profile is incomplete.
+    """
+    if not request.user.is_authenticated:
+        # Should not happen in a real setup, but a safety check
+        return redirect('login')
+
+    user = request.user
+
+    # 1. Check if UserProfile exists
+    try:
+        profile = user.userprofile
+    except UserProfile.DoesNotExist:
+        # This is a NEW social user. We must create the profile.
+
+        # --- CRITICAL: Create Profile for Social User ---
+        UserProfile.objects.create(
+            user=user,
+            college_name="Not Set",  # Placeholder, collected in mandatory setup
+            setup_complete=False,  # Force setup
+            # Other fields (phone_number, profile_icon) use defaults/nulls
+        )
+        messages.info(request, "Welcome! Please complete your profile to access the community.")
+        return redirect('dashboard')
+
+    # 2. If profile exists, check if mandatory setup is complete
+    if not profile.setup_complete:
+        messages.info(request, "Please complete your profile setup.")
+        return redirect('dashboard')
+
+    # 3. If setup is complete, send them to the dashboard
+    return redirect('dashboard')
+
+
+# main_app/views.py (Add new placeholder view)
+
+def social_login_start_view(request):
+    """
+    Simulates the start of the social login process.
+    It creates or logs in a test user and redirects to the success handler.
+    """
+    # 1. Ensure a test user exists or create one.
+    try:
+        # Use a unique email/username for the test Google user
+        test_email = 'google.test.user@example.com'
+        test_user = User.objects.get(Q(email=test_email) | Q(username=test_email))
+    except User.DoesNotExist:
+        # Create a new user if not found (simulating first-time social signup)
+        test_user = User.objects.create_user(
+            username=test_email,
+            email=test_email,
+            password='testpassword123',
+            first_name='Google',
+            last_name='Test'
+        )
+        test_user.save()
+
+    # 2. Log in the test user
+    login(request, test_user)
+
+    # 3. Redirect to the success handler, which will check for the mandatory profile setup.
+    return redirect('social_login_success')

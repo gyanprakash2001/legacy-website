@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+    <div class="signup-page">
+        <header>
+            <div class="logo">Legacy</div>
+        </header>
+        <div class="columns">
+            <div class="left-pane">
+                <div style="padding-top: 50px;">
+                    <h1 class="signup-title">
+                        Sign Up with Email
+                    </h1>
+
+                    <form method="post" class="signup-form" autocomplete="off">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            {{ form.first_name.label_tag }}
+                            {{ form.first_name }}
+                        </div>
+                         <div class="form-group">
+                            {{ form.last_name.label_tag }}
+                            {{ form.last_name }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password.label_tag }}
+                            {{ form.password }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password_confirm.label_tag }}
+                            {{ form.password_confirm }}
+                        </div>
+
+                        <button type="submit" class="register-btn">Continue to Profile Setup</button>
+                    </form>
+
+                    <p style="margin-top: 20px; text-align: center;">
+                        Already have an account? <a href="{% url 'login' %}">Log In</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="right-pane">
+                <div class="signup-image-card">
+                    <img src="{% static 'images/dog_plane.jpg' %}" alt="Dog and Plane" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
