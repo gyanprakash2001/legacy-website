@@ -15,10 +15,9 @@ from .models import Event, Post, UserProfile, MediaFile, EventApplicationDetails
 from .forms import UserRegistrationForm, PostForm, EventCreationForm, EventApplicationForm, UserUpdateForm, UserProfileUpdateForm
 from datetime import datetime
 from django.views.decorators.http import require_POST
-from .decorators import profile_setup_required
 from .forms import MandatoryProfileForm
 from .models import UserProfile, College
-
+from .models import Event
 
 
 
@@ -61,35 +60,22 @@ def create_post(request):
     return render(request, 'main_app/create_post.html', {'form': form})
 
 
+from .decorators import profile_setup_required
+
 @login_required
+@profile_setup_required  # This enforces the redirect to the setup page if profile is incomplete
 def dashboard(request):
     user = request.user
-    show_setup_modal = False
-    setup_form = None # Initialize setup_form
 
-    # --- NEW CRITICAL: Check Profile Completion Status ---
-    try:
-        user_profile = user.userprofile
-        if not user_profile.setup_complete:
-            # 1. Profile is incomplete: Activate the modal flag
-            show_setup_modal = True
-
-            # 2. Instantiate the Mandatory Setup Form
-            # Pass the user instance to the form's __init__ method
-            # for pre-filling name fields (Action B from Step 1)
-            setup_form = MandatoryProfileForm(instance=user_profile, user=user)
-
-    except UserProfile.DoesNotExist:
-        # Safety check: If profile doesn't exist (shouldn't happen after registration),
-        # force the modal and try to instantiate the form without a profile instance (optional handling)
-        show_setup_modal = True
-        setup_form = MandatoryProfileForm(user=user)
+    # NOTE: The manual profile check and modal instantiation has been removed.
+    # We now assume the profile is complete if this function runs.
 
     # 1. Get the list of college names the user is following via the Follow model
     followed_college_names = list(Follow.objects.filter(follower=user).values_list('college_name', flat=True))
 
     # 2. Get the user's own college name (This ensures posts from their college are always seen)
-    user_college_name = user.userprofile.college_name if hasattr(user, 'userprofile') else None
+    # We must assume user_profile exists because of the @profile_setup_required decorator
+    user_college_name = user.userprofile.college_name
 
     # Add the user's own college to the filter list if it's not already there (it might be followed explicitly)
     if user_college_name and user_college_name not in followed_college_names:
@@ -120,9 +106,8 @@ def dashboard(request):
                                                                                          'organizer').order_by(
         'date_time')
 
-    # --- MISSING LOGIC ADDED HERE ---
+    # --- Sidebar Data ---
     # Fetch the suggested colleges needed for the right sidebar
-    # We must handle the case where the UserProfile might not exist
     try:
         suggested_colleges = list(College.objects.all().order_by('?')[:3])
     except:
@@ -137,7 +122,7 @@ def dashboard(request):
             'category': category,
             'types': types,
         })
-    # --- END MISSING LOGIC ---
+    # --- END Sidebar Data ---
 
     # Ensure posts_list is passed in the context
     context = {
@@ -146,12 +131,12 @@ def dashboard(request):
         'suggested_colleges': suggested_colleges,
         'categories_with_types': categories_with_types,
 
-        # --- NEW CONTEXT FOR MODAL ---
-        'show_setup_modal': show_setup_modal,
-        'setup_form': setup_form, # Pass the instantiated form
+        # The NEW CONTEXT for the modal is removed, as it's no longer needed here.
     }
 
     return render(request, 'main_app/dashboard.html', context)
+
+
 
 
 @login_required
@@ -703,32 +688,32 @@ def profile_view(request):
 
 
 
-# main_app/views.py
 
-# main_app/views.py
+# In main_app/views.py
+
+# In main_app/views.py (This must replace the entire function body)
 
 @login_required
 def mandatory_profile_setup_view(request):
     user = request.user
 
-    # Check if UserProfile exists before proceeding
+    # 1. Get the profile instance and check for existence
     try:
         user_profile = user.userprofile
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile missing.")
         return redirect('dashboard')
 
-    # 1. Redirect if setup is already complete
+    # 2. Safety check: If setup is ALREADY complete, send them to the dashboard.
     if user_profile.setup_complete:
         return redirect('dashboard')
 
     if request.method == 'POST':
-        # 2. Instantiate form with POST data, FILES, and instance
-        # NOTE: Pass 'user' instance to the form's __init__ for name handling
+        # Handle POST submission (user clicks 'Complete Setup')
         form = MandatoryProfileForm(request.POST, request.FILES, instance=user_profile, user=user)
 
         if form.is_valid():
-            # 3. Save User (Names) and UserProfile (College/Phone/Icon)
+            # Success path: Mark complete and redirect
             profile = form.save(commit=False)
             profile.setup_complete = True
             profile.save()
@@ -736,57 +721,60 @@ def mandatory_profile_setup_view(request):
             messages.success(request, 'Profile setup complete! Welcome to the dashboard.')
             return redirect('dashboard')
         else:
-            # 4. Failed POST: Pass errors via message and redirect back to dashboard
+            # Failure path: Errors will be shown on the form when rendered below
             messages.error(request, 'There were errors in your profile data. Please check and try again.')
-            # The dashboard view will re-instantiate the form with pre-filled data and show errors
-            return redirect('dashboard')
+            # Do NOT redirect. Fall through to the rendering step.
 
+    # 💥 CRITICAL: This is the rendering path for both GET and failed POST submissions.
     else:
-        # 5. GET request: User accessed /setup/mandatory/ directly (or from an incorrect link).
-        # We redirect them to the dashboard where the modal handles the display.
-        return redirect('dashboard')
+        # GET request (initial page load)
+        form = MandatoryProfileForm(instance=user_profile, user=user)
 
+    # 3. RENDER THE DEDICATED TEMPLATE
+    context = {
+        'form': form,
+        'page_title': 'Complete Profile Setup'
+    }
+
+    # This is the final step that renders the dedicated page, breaking the redirect loop.
+    return render(request, 'main_app/mandatory_profile_setup.html', context)
+# In main_app/views.py (within the register_view function)
 
 
 def register_view(request):
     if request.method == 'POST':
-        # UserRegistrationForm no longer requires request.FILES since profile_icon is gone
         form = UserRegistrationForm(request.POST)
 
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.first_name = form.cleaned_data['first_name']
-            user.last_name = form.cleaned_data['last_name']  # Ensure last_name is saved
+            try:
+                # 1. Save the User. (The form handles username=email and password hashing)
+                user = form.save()
 
-            # CRITICAL: Since username is populated via clean_email, no need to set it here explicitly
-            user.save()
+                # 2. UserProfile creation is handled by the post_save signal in models.py.
+                # If we trust the signal, we don't need the explicit UserProfile.objects.create().
+                # Let's trust the signal for a clean view.
 
-            # --- CRITICAL: Create Profile & Set Initial Status (SIMPLIFIED) ---
+                # 3. Log In and Redirect (CRITICAL SUCCESS PATH)
+                login(request, user)
 
-            # NOTE: We use default/null values for mandatory fields, as they will be collected later.
-            UserProfile.objects.create(
-                user=user,
-                college_name="Not Set",  # Use a default placeholder
-                # phone_number is null/blank by default
-                # profile_icon is default by default
-                setup_complete=False  # User is locked out of the dashboard
-            )
+                messages.success(request, 'Account created successfully! Please complete your profile.')
 
-            # 1. Log In the User Immediately
-            login(request, user)
-            messages.success(request, 'Account created successfully! Please complete your profile.')
+                # Success: Redirect to the next step
+                return redirect('dashboard')
 
-            # 2. Redirect directly to the Mandatory Setup View
-            # We skip college_setup_view, as the College field is now in the mandatory form.
-            return redirect('dashboard')  # <-- DIRECT REDIRECT
-
+            except Exception as e:
+                # This catches any UNEXPECTED errors during the save or login process.
+                # The "user exists" check is now handled by the clean_email in forms.py.
+                messages.error(request, f'Registration failed: An unexpected error occurred. {e}')
+                # Fall through to re-render the form with errors
     else:
+        # GET request
         form = UserRegistrationForm()
 
-    # Colleges are no longer needed for the simplified registration form
-    # We can remove 'colleges': colleges from the context if we update register.html
+    # Re-render the form on GET or POST failure
     return render(request, 'main_app/register_form.html', {'form': form})
+
+
 
 
 
@@ -869,3 +857,20 @@ def social_login_start_view(request):
 
     # 3. Redirect to the success handler, which will check for the mandatory profile setup.
     return redirect('social_login_success')
+
+
+def event_detail_view(request, event_link_key):
+    """
+    Handles displaying the details for a single event.
+    """
+    # Use the event_link_key (UUID) to fetch the specific Event object
+    # Assuming 'event_link_key' is the field name on your Event model
+    event = get_object_or_404(Event, event_link_key=event_link_key)
+
+    context = {
+        'event': event,
+        'page_title': event.event_name  # Dynamically set the title
+    }
+
+    # You will need to create the 'main_app/event_detail.html' template
+    return render(request, 'main_app/event_detail.html', context)
