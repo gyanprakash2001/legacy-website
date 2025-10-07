@@ -60,7 +60,7 @@ def create_post(request):
     return render(request, 'main_app/create_post.html', {'form': form})
 
 
-from .decorators import profile_setup_required
+
 
 @login_required
 @profile_setup_required  # This enforces the redirect to the setup page if profile is incomplete
@@ -874,3 +874,14 @@ def event_detail_view(request, event_link_key):
 
     # You will need to create the 'main_app/event_detail.html' template
     return render(request, 'main_app/event_detail.html', context)
+
+
+
+# main_app/views.py (at the very bottom of the file)
+# ----------------------------------------------------
+# DECORATOR FIX: BREAK CIRCULAR DEPENDENCY
+# ----------------------------------------------------
+from .decorators import profile_setup_required
+
+# Re-assign the dashboard function object to its decorated version
+dashboard = profile_setup_required(dashboard)
