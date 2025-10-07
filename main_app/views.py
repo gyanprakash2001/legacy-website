@@ -18,7 +18,7 @@ from django.views.decorators.http import require_POST
 from .forms import MandatoryProfileForm
 from .models import UserProfile, College
 from .models import Event
-
+from .decorators import profile_setup_required
 
 
 def index(request):
@@ -63,6 +63,7 @@ def create_post(request):
 
 
 @login_required
+@profile_setup_required  # This enforces the redirect to the setup page if profile is incomplete
 def dashboard(request):
     user = request.user
 
@@ -875,12 +876,3 @@ def event_detail_view(request, event_link_key):
     return render(request, 'main_app/event_detail.html', context)
 
 
-
-# main_app/views.py (at the very bottom of the file)
-# ----------------------------------------------------
-# DECORATOR FIX: BREAK CIRCULAR DEPENDENCY
-# ----------------------------------------------------
-from .decorators import profile_setup_required
-
-# Re-assign the dashboard function object to its decorated version
-dashboard = profile_setup_required(dashboard)
