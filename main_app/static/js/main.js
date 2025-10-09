@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 3. NEW FILTER MODAL LOGIC (Correct) ---
+    // --- 3. FILTER MODAL LOGIC (Correct) ---
     const filterTrigger = document.getElementById('eventFilterTrigger');
     const filterModal = document.getElementById('filterModal');
     const closeBtn = document.getElementById('closeFilterModal');
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // --- 4. STATE AUTOCOMPLETE LOGIC FOR EVENT FILTER MODAL (MOVED HERE) ---
+    // --- 4. STATE AUTOCOMPLETE LOGIC FOR EVENT FILTER MODAL (Correct) ---
     const stateInput = document.getElementById('state-filter-input');
     const selectedStateHiddenInput = document.getElementById('selected-state-name');
     let stateDropdown = null;
@@ -235,4 +235,109 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+
+    // =========================================================
+    // --- 5. NEW: MEDIA MODAL/GALLERY LOGIC (THE FIX) ---
+    // =========================================================
+    const modal = document.getElementById('media-modal');
+    const close = modal.querySelector('.close-btn');
+    const modalImage = document.getElementById('modal-image');
+    const modalVideo = document.getElementById('modal-video');
+    const prevMediaBtn = document.getElementById('prev-media');
+    const nextMediaBtn = document.getElementById('next-media');
+
+    let currentMediaUrls = [];
+    let currentIndex = 0;
+
+    // Helper function to show the current media item
+    const showCurrentMedia = () => {
+        const url = currentMediaUrls[currentIndex];
+        const isVideo = url.toLowerCase().endsWith('.mp4') || url.toLowerCase().endsWith('.webm');
+
+        // Reset visibility
+        modalImage.style.display = 'none';
+        modalVideo.style.display = 'none';
+
+        if (isVideo) {
+            modalVideo.src = url;
+            modalVideo.style.display = 'block';
+            modalVideo.load();
+        } else {
+            modalImage.src = url;
+            modalImage.style.display = 'block';
+        }
+
+        // Hide navigation buttons if there is only one item
+        if (currentMediaUrls.length <= 1) {
+            prevMediaBtn.style.display = 'none';
+            nextMediaBtn.style.display = 'none';
+        } else {
+            prevMediaBtn.style.display = 'block';
+            nextMediaBtn.style.display = 'block';
+        }
+    };
+
+    // 5.1. Open Modal on Media Click
+    document.querySelectorAll('.media-gallery').forEach(gallery => {
+        gallery.addEventListener('click', (e) => {
+            const clickedItem = e.target.closest('.gallery-item, .gallery-plus-sign');
+
+            if (clickedItem) {
+                const mediaUrlsString = gallery.dataset.mediaUrls;
+                if (!mediaUrlsString) return;
+
+                // Safely parse the JSON string from the data attribute
+                try {
+                    currentMediaUrls = JSON.parse(mediaUrlsString);
+                } catch (error) {
+                    console.error('Error parsing media URLs:', error);
+                    return;
+                }
+
+                // Determine the index of the clicked item (if it's one of the visible ones)
+                if (e.target.closest('.gallery-item')) {
+                    const galleryItems = gallery.querySelectorAll('.gallery-item');
+                    currentIndex = Array.from(galleryItems).indexOf(e.target.closest('.gallery-item'));
+                    // If the click was on the plus sign, just open to the first one (index 0)
+                } else if (e.target.closest('.gallery-plus-sign')) {
+                     currentIndex = 0; // Start at the beginning for plus sign click
+                }
+
+                // Fallback to 0 if we somehow clicked something else or index is out of bounds
+                if (currentIndex === -1) currentIndex = 0;
+
+
+                showCurrentMedia();
+                modal.style.display = 'flex'; // Use flex to help with centering modal content
+            }
+        });
+    });
+
+    // 5.2. Close Modal
+    close.onclick = function() {
+        modal.style.display = 'none';
+        modalVideo.pause(); // Stop video playback when closing
+    }
+
+    // Close modal if user clicks outside of the content container
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            modalVideo.pause();
+        }
+    });
+
+    // 5.3. Navigation (Previous)
+    prevMediaBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent the click from bubbling up to close the modal
+        currentIndex = (currentIndex > 0) ? currentIndex - 1 : currentMediaUrls.length - 1;
+        showCurrentMedia();
+    });
+
+    // 5.4. Navigation (Next)
+    nextMediaBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent the click from bubbling up to close the modal
+        currentIndex = (currentIndex < currentMediaUrls.length - 1) ? currentIndex + 1 : 0;
+        showCurrentMedia();
+    });
 });

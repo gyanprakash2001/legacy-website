@@ -1,367 +1,77 @@
-/*----------------------------------*/
-/* Global Styles & Font Imports     */
-/*----------------------------------*/
+/* Update Global Font and Colors */
 html, body {
-    overflow-x: hidden;
+    /* Set the background and font color for the entire application */
+    background-color: #121212; /* Very dark gray/black */
+    color: #f0f0f0; /* Off-white text */
+    font-family: 'Times New Roman', Times, serif; /* Set Font for all pages */
+
+    /* CRITICAL FIX: Remove default browser margins/padding to ensure full coverage */
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
+    width: 100%;      /* Ensure full width is available */
+    height: 100%;     /* Ensure full height is available */
+    overflow-x: hidden; /* Prevent horizontal scrolling bug */
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap');
+/* Ensure font is correctly imported/loaded if necessary */
+@import url('https://fonts.googleapis.com/css?family=Times+New+Roman&display=swap');
 
 :root {
-    --color-left-bg: #CAD0EF;
-    --color-right-bg: #CAD0EF;
-    --color-logo-text: #333333;
-    --color-text-dark: #333333;
-    --color-primary-button: #212121;
-    --color-up-text: #ffffff;
-    --color-welcome-text: #ffffff;
+    /* Define Dark Theme Variables */
+    --color-left-bg: #1e1e1e; /* Darker gray for section backgrounds */
+    --color-right-bg: #1e1e1e;
+    --color-logo-text: #ffffff; /* White logo */
+    --color-text-dark: #f0f0f0; /* Off-white text */
+    --color-primary-button: #BB86FC; /* Light purple/accent for contrast */
+    --color-up-text: #000000; /* Text color for elements that must stay bright (e.g., inside white buttons) */
+    --color-welcome-text: #ffffff; /* White welcome text */
+    --color-card-background: #1f1f1f; /* Dark background for cards/modals */
+    --color-border-light: #444444; /* Darker border lines */
+    --color-placeholder: #888888; /* Gray placeholder text */
+    --color-secondary-bg: #292929; /* Slightly lighter dark background for contrast */
+    --color-tertiary-bg: #333333; /* For hover states etc. */
 }
 
-/*----------------------------------*/
-/* Landing Page Styles              */
-/*----------------------------------*/
-.landing-page {
-    display: flex;
-    min-height: 100vh;
-    background: linear-gradient(to right, var(--color-left-bg) 70%, var(--color-right-bg) 30%);
-    position: relative;
-    overflow: hidden;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 25px 60px;
-    box-sizing: border-box;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 20;
-}
-
-.logo {
-    font-weight: 1000;
-    font-size: 1.4rem;
-    color: var(--color-logo-text);
-    letter-spacing: -0.5px;
-}
-
-nav {
-    display: flex;
-    align-items: center;
-}
-
-nav a {
-    text-decoration: none;
-    color: var(--color-text-dark);
-    margin-left: 30px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    transition: color 0.3s ease, transform 0.2s ease;
-}
-
-nav a:hover {
-    color: var(--color-primary-button);
-    transform: translateY(-2px);
-}
-
-.sign-up-button {
-    background-color: var(--color-primary-button);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 25px;
-    font-weight: bold;
-    font-size: 1.0rem;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.sign-up-button:hover {
-    background-color: #333333;
-    transform: translateY(-2px);
-}
-
-.welcome-section {
-    position: absolute;
-    top: 60%;
-    left: 35%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-    text-align: left;
-}
-
-.welcome-section h1 {
-    font-family: 'Rammetto One', cursive;
-    font-size: 4rem;
-    font-weight: 1000;
-    color: var(--color-welcome-text);
-    margin: 0;
-    letter-spacing: 5px;
-    text-shadow: 1.2px 1.2px 0 var(--color-logo-text);
-}
-
-.login-button:hover {
-    background-color: #333333;
-    transform: translateY(-5px);
-}
-
-.image-section {
-    position: absolute;
-    top: 120px;
-    left: 70%;
-    transform: translateX(-50%);
-    z-index: 12;
-    width: 410px;
-    height: 510px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-}
-
-.image-section img {
-    width: 80%;
-    height: 80%;
-    object-fit: cover;
-    border-radius: 0px;
-    box-shadow: 0 10px 36px rgba(60,30,60,0.16);
-    border: none;
-}
-
-/*----------------------------------*/
-/* Signup/Login Page Styles         */
-/*----------------------------------*/
-.signup-page, .login-page {
-    min-height: 100vh;
-    background: linear-gradient(to right, var(--color-left-bg) 70%, var(--color-right-bg) 30%);
-    position: relative;
-    overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.columns {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 40px;
-    box-sizing: border-box;
-}
-
-.left-pane, .right-pane {
-    width: 45%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 40px 0 0;
-    height: auto;
-}
-
-.left-pane {
-    align-items: flex-end;
-}
-
-.right-pane {
-    align-items: center;
-    padding: 0 0 0 10px;
-}
-
-.signup-title, .login-title {
-    font-family: 'Rammetto One', cursive;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 2px 2px 0 #9db7c3;
-    line-height: 1.15;
-    text-align: center;
-}
-
-.signup-title {
-    font-size: 2.5rem;
-    margin-top: 0;
-}
-
-.login-title {
-    font-size: 3rem;
-    letter-spacing: 5px;
-    margin-top: 100px;
-    margin-bottom: 40px;
-}
-
-.signup-form, .login-form {
-    width: 350px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
-}
-
-.login-form {
-    width: 320px;
-    padding: 28px 24px;
-}
-
-.signup-form {
-    margin-top: 24px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 0px;
-}
-
-.signup-form label, .login-form label {
-    font-weight: 700;
-    margin-bottom: 6px;
-    color: #222;
-}
-
-.signup-form input[type='text'], .signup-form input[type='password'],
-.login-form input[type='text'], .login-form input[type='password'] {
-    border: 2px solid #b4c8d0;
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-size: 1.1rem;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.alumni-field {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.register-btn, .login-btn {
-    background: #212121;
-    color: #fff;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 18px;
-    padding: 12px 0;
-    margin-top: 10px;
-    cursor: pointer;
-    box-shadow: 0 3px 8px rgba(232, 97, 137, 0.22);
-    transition: background 0.2s;
-}
-
-.register-btn:hover, .login-btn:hover {
-    background: #CAD0EF;
-}
-
-.signup-image-card, .login-image-card {
-    width: 320px;
-    height: 410px;
-    background: #fff;
-    border-radius: 0;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.17);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.signup-image-card {
-    margin: -50px 0 0 0px;
-}
-
-.signup-image-card img, .login-image-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-@media (max-width: 1024px) {
-    .left-pane {
-        height: auto;
-    }
-}
-
-.icon-selection-group {
-    margin-top: 15px;
-}
-
-.icon-choices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 5px;
-}
-
-.profile-icon-option {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.2s ease;
-}
-
-.icon-choices label {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-.icon-choices input[type="radio"] {
-    display: none;
-}
-
-.icon-choices input[type="radio"]:checked + .profile-icon-option {
-    border-color: #007bff;
-}
 
 /*----------------------------------*/
 /* Dashboard Page Styles            */
 /*----------------------------------*/
 .dashboard-container {
-    background-color: #f0f2f5;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #1c1e21;
+    background-color: #121212; /* Match global body background */
+    font-family: 'Times New Roman', Times, serif;
+    color: var(--color-text-dark, #f0f0f0);
     display: grid;
-    /* CRITICAL CHANGE: Narrower sidebar (220px) and no left padding on the grid */
     grid-template-columns: 250px 1fr 300px;
     gap: 20px;
-    padding: 0 0px 20px 0; /* REMOVES LEFT PADDING FOR EDGE ALIGNMENT */
+    padding: 0 0px 20px 0;
     min-height: 100vh;
     box-sizing: border-box;
 }
 
-.sidebar-left, .sidebar-right, .post-item, .section-container {
-    background-color: #ffffff;
+
+.sidebar-left, .sidebar-right, .post-item, .section-container,
+#filterModal .modal-content, #daily-event-modal .modal-content {
+    /* Set all component backgrounds to dark card color */
+    background-color: var(--color-card-background, #1f1f1f);
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    color: var(--color-text-dark, #f0f0f0);
 }
 
 .sidebar-left {
-    /* Restores light background, removes horizontal padding for edge alignment */
     padding: 0px 0px 20px 0px;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
-    border-radius: 0; /* REMOVE rounded corners */
-    box-shadow: none; /* REMOVE shadow for sleek look */
+    background-color: var(--color-left-bg, #1e1e1e); /* Use dark background variable */
+    border-radius: 0;
+    box-shadow: none;
 }
+
 
 .sidebar-left .logo {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #000;
+    color: var(--color-logo-text, #ffffff); /* Use white logo text variable */
     margin-bottom: 30px;
 }
 
@@ -375,29 +85,34 @@ nav a:hover {
 .sidebar-left .logout,
 .secondary-nav .nav-item {
     text-decoration: none;
-    color: #1c1e21; /* DARK TEXT COLOR (Black/Dark Gray) */
+    color: var(--color-text-dark, #f0f0f0);  /* White text color variable */
     font-size: 1.2rem;
     font-weight: 500;
-    padding: 10px 20px; /* CRITICAL: Adds inner padding for far-left alignment */
+    padding: 10px 20px;
     border-radius: 0;
     display: flex;
     align-items: center;
-    gap: 15px; /* Creates space between icon and text */
-    text-align: left; /* Ensures text inside link is left-aligned */
+    gap: 15px;
+    text-align: left;
     transition: background-color 0.2s ease;
 }
 
 
+.main-nav .nav-item:hover,
+.sidebar-left .logout:hover,
+.secondary-nav .nav-item:hover {
+    background-color: var(--color-tertiary-bg, #333333); /* Darker hover state */
+}
 
 .main-nav .nav-item.active {
-    color: #000000;
+    color: var(--color-text-dark, #f0f0f0); /* Active text remains white */
     font-weight: 700;
-    background-color: #f0f2f5;
+    background-color: var(--color-secondary-bg, #292929); /* Slightly different dark background for active state */
 }
 
 .sidebar-left .more-nav {
     margin-top: auto;
-    color: #65676b;
+    color: var(--color-placeholder, #888888); /* Gray color for the 'More' link */
     font-size: 1.1rem;
     font-weight: 500;
     padding: 12px;
@@ -407,6 +122,7 @@ nav a:hover {
     gap: 15px;
     cursor: pointer;
 }
+
 
 .main-feed {
     display: flex;
@@ -421,10 +137,10 @@ nav a:hover {
 }
 
 .start-post-container {
-    background-color: #ffffff;
+    background-color: var(--color-card-background, #1f1f1f); /* Dark card background */
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); /* Darker shadow */
     display: flex;
     align-items: center;
     gap: 15px;
@@ -442,17 +158,17 @@ nav a:hover {
     align-items: center;
     flex-grow: 1;
     gap: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-light, #444444); /* Darker border */
     border-radius: 20px;
     padding: 8px 15px;
-    background-color: #f0f2f5;
+    background-color: var(--color-secondary-bg, #292929); /* Darker input background */
     box-shadow: none;
     text-decoration: none;
     transition: background-color 0.2s ease;
 }
 
 .start-post-link:hover {
-    background-color: #e4e6eb;
+    background-color: var(--color-tertiary-bg, #333333); /* Darker hover */
 }
 
 .start-post-link input[type="text"] {
@@ -462,9 +178,10 @@ nav a:hover {
     background: transparent;
     cursor: pointer;
     font-size: 1rem;
-    color: #555;
+    color: var(--color-text-dark, #f0f0f0); /* White text color in input */
     padding: 0;
 }
+
 
 .post-button-redirect {
     padding: 8px 20px;
@@ -479,7 +196,7 @@ nav a:hover {
 }
 
 .post-button-redirect:hover {
-    background-color: #333;
+    background-color: #A9A9A9;
 }
 
 .posts-list {
@@ -489,10 +206,10 @@ nav a:hover {
 }
 
 .post-item {
-    background-color: #ffffff;
+    background-color: var(--color-card-background, #1f1f1f); /* Dark card background */
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); /* Darker shadow */
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -533,17 +250,18 @@ nav a:hover {
 .username-and-college .username {
     font-weight: bold;
     margin-right: 220px;
+    color: var(--color-text-dark, #f0f0f0); /* White text */
 }
 
 .username-and-college .college-name {
-    color: #888;
+    color: var(--color-placeholder, #888888); /* Gray for college name */
     font-size: 0.85em;
     margin-left: auto;
 }
 
 .post-timestamp {
     font-size: 0.75em;
-    color: #aaa;
+    color: var(--color-placeholder, #888888); /* Gray timestamp */
     margin-left: 0;
 }
 
@@ -596,10 +314,10 @@ nav a:hover {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-top: 1px solid #f0f2f5;
+    border-top: 1px solid var(--color-border-light, #444444); /* Darker divider */
     padding-top: 15px;
     font-size: 1.2rem;
-    color: #65676b;
+    color: var(--color-placeholder, #888888); /* Gray icons */
 }
 
 .post-actions i {
@@ -608,7 +326,7 @@ nav a:hover {
 }
 
 .post-actions i:hover {
-    color: #000;
+    color: var(--color-text-dark, #f0f0f0); /* White on hover */
 }
 
 .sidebar-right {
@@ -618,9 +336,9 @@ nav a:hover {
 }
 
 .section-container {
-    background-color: #ffffff;
+    background-color: var(--color-card-background, #1f1f1f); /* Dark card background */
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); /* Darker shadow */
     padding: 20px;
 }
 
@@ -628,24 +346,21 @@ nav a:hover {
     font-size: 1.2rem;
     font-weight: bold;
     margin: 0 0 15px 0;
+    color: var(--color-text-dark, #f0f0f0); /* White text */
 }
 
 .college-item {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Vertically centers the text and button */
+    align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid var(--color-border-light, #444444); /* Darker divider */
 }
 
 .college-item:last-child {
     border-bottom: none;
 }
 
-.college-name {
-    font-weight: 500;
-    color: #1c1e21;
-}
 
 .follow-btn {
     /* Existing button styles */
@@ -653,22 +368,22 @@ nav a:hover {
     min-width: 85px; /* Gives a uniform width to the buttons for perfect alignment */
     text-align: center;
 
-    background-color: #e4e6eb;
-    color: #000;
+    background-color: var(--color-secondary-bg, #292929); /* Dark button background */
+    color: var(--color-text-dark, #f0f0f0); /* White text */
     padding: 8px 15px;
     border-radius: 20px;
     text-decoration: none;
     font-weight: bold;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .follow-btn:hover {
-    background-color: #d1d3d8;
+    background-color: var(--color-tertiary-bg, #333333); /* Darker hover */
 }
 
 .event-item {
     padding: 10px 0;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid var(--color-border-light, #444444); /* Darker divider */
     position: relative;
 }
 
@@ -676,16 +391,11 @@ nav a:hover {
     border-bottom: none;
 }
 
-.event-name {
-    font-weight: bold;
-    margin: 0 0 5px 0;
-    color: #1c1e21;
-}
 
-.event-time {
-    color: #65676b;
-    font-size: 0.9rem;
+.event-details, .event-time {
+    color: var(--color-placeholder, #888888); /* Gray text */
     margin: 0;
+    font-size: 0.9rem;
 }
 
 .media-modal {
@@ -790,7 +500,7 @@ nav a:hover {
 
 .event-name-link {
     text-decoration: none;
-    color: #1c1e21;
+    color: var(--color-text-dark, #f0f0f0); /* White text */
 }
 
 .event-name-link:hover {
@@ -798,13 +508,12 @@ nav a:hover {
 }
 
 .calendar-container {
-    background-color: #ffffff;
+    background-color: var(--color-left-bg, #1e1e1e); /* Use dark background variable */
     border-radius: 0;
     box-shadow: none;
     padding: 5px 1px;
-    /* REDUCE MARGIN-TOP */
     margin-top: -2px;
-    color: #1c1e21;
+    color: var(--color-text-dark, #f0f0f0); /* White text */
 }
 
 .calendar-container h2 {
@@ -825,12 +534,12 @@ nav a:hover {
     border: none;
     font-size: 1rem;
     cursor: pointer;
-    color: #65676b;
+    color: var(--color-placeholder, #888888); /* Gray button text */
     transition: color 0.2s ease;
 }
 
 .calendar-header button:hover {
-    color: #000;
+    color: var(--color-text-dark, #f0f0f0); /* White on hover */
 }
 
 .calendar-header h3 {
@@ -843,7 +552,7 @@ nav a:hover {
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
     font-weight: bold;
-    color: #65676b;
+    color: var(--color-placeholder, #888888); /* Gray header text */
     margin-bottom: 5px;
     padding: 0 5px;
 }
@@ -853,11 +562,11 @@ nav a:hover {
     justify-content: center;
     align-items: center;
     font-size: 0.9rem;
-    color: #555;
+    color: var(--color-placeholder, #888888); /* Gray text */
 }
 
 .calendar-grid-header span:first-child {
-    color: red;
+    color: red; /* Set Sunday to Red */
 }
 
 .calendar-grid {
@@ -873,28 +582,42 @@ nav a:hover {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border-light, #444444); /* Darker border */
     cursor: pointer;
     font-size: 1rem;
     position: relative;
     transition: background-color 0.2s ease;
+    color: var(--color-text-dark, #f0f0f0); /* White day number */
 }
+
 
 .calendar-day:hover {
-    background-color: #f0f2f5;
+    background-color: var(--color-tertiary-bg, #333333); /* Dark hover state */
 }
 
+
 .calendar-day.event-day {
-    background-color: #a8e6cf; /* Light green for normal events */
-    color: d4edda; /* Darker text for readability */
+    /* Use a visually distinct dark accent for event days */
+    background-color: #583F8C;
+    color: var(--color-text-dark, #f0f0f0);
     font-weight: bold;
     border-radius: 50%;
     position: relative;
+    border: 1px solid var(--color-primary-button, #BB86FC);
 }
 
 .calendar-day.inactive {
     visibility: hidden;
     border: none;
+}
+
+
+.calendar-date:hover .event-summary {
+    /* This is the key line to make it visible */
+    display: block;
+    /* or */
+    visibility: visible;
+    opacity: 1;
 }
 
 .event-count {
@@ -913,17 +636,17 @@ nav a:hover {
     justify-content: center;
 }
 
-.event-tooltip {
-    display: none;
+event-tooltip {
+    display: none; /* Will be set to 'block' by JS on hover */
     position: absolute;
-    background-color: #333;
+    background-color: #333; /* Dark background */
     color: white;
-    padding: 8px 12px;
+    padding: 10px;
     border-radius: 6px;
     font-size: 0.8rem;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 5000; /* Extremely high z-index to ensure it is always on top */
+    pointer-events: none; /* Allows clicks to pass through the tooltip to elements underneath */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     min-width: 200px;
     line-height: 1.4;
 }
@@ -934,19 +657,16 @@ nav a:hover {
 .event-type-General { background-color: #90EE90; }
 
 .query-container {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #5E2C04;
-    color: white;
+    /* Using the accent color for the button */
+    background-color: var(--color-primary-button, #BB86FC);
+    color: var(--color-up-text, #000000); /* Black text for contrast */
     padding: 5px 10px;
     border-radius: 20px;
     cursor: pointer;
     font-weight: bold;
     font-size: 0.9em;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
     transition: transform 0.2s ease-in-out;
-    z-index: 10;
 }
 
 .query-container:hover {
@@ -954,35 +674,26 @@ nav a:hover {
 }
 
 .contact-info-popup {
-    display: none;
-    position: absolute;
-    top: 35px;
-    right: 0;
-    width: 200px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-    z-index: 20;
-    transition: opacity 0.3s ease-in-out;
+    /* Popup background/border */
+    background-color: var(--color-secondary-bg, #292929);
+    border: 1px solid var(--color-border-light, #444444);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .contact-info-popup p {
-    margin: 0;
-    font-size: 0.9em;
-    color: #333;
-    line-height: 1.5;
+    color: var(--color-text-dark, #f0f0f0); /* White text */
 }
 
 .contact-info-popup a {
-    color: #5E2C04;
+    color: var(--color-primary-button, #BB86FC); /* Accent color for links */
     text-decoration: none;
 }
 
 .contact-info-popup a:hover {
     text-decoration: underline;
 }
+
+
 /* This is a test for me */
 
 /* Styles for forms on the create_event page */
@@ -1074,16 +785,16 @@ nav a:hover {
 /* Style for the new link in the header */
 .header-link {
     text-decoration: none;
-    color: #000;
+    color: var(--color-text-dark, #f0f0f0); /* White link text */
     font-size: 1.2rem;
-    font-weight: bold; /* Make the font bold */
+    font-weight: bold;
     padding: 12px;
     border-radius: 8px;
     transition: background-color 0.2s ease;
 }
 
 .header-link:hover {
-    background-color: #f0f2f5;
+    background-color: var(--color-secondary-bg, #292929); /* Dark hover state */
 }
 
 
@@ -1097,27 +808,41 @@ nav a:hover {
 /* --- Styles for the Daily Event Modal (Fixes layout issue) --- */
 
 #daily-event-modal {
-    display: none; /* Must be hidden by default */
-    position: fixed; /* Stays in place when scrolling */
-    z-index: 1000; /* Stays on top of everything */
+    /* Keep these properties to cover the whole screen and provide dark backdrop */
+    display: none; /* Controlled by JS; starts hidden */
+    position: fixed;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0, 0, 0, 0.7); /* Black w/ opacity */
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 #daily-event-modal .modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; /* Center modal vertically and horizontally */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Width of the modal content */
-    max-width: 500px; /* Maximum width for clean look */
+    /* CRITICAL FIX: Dark card background */
+    background-color: var(--color-left-bg, #1e1e1e);
+    padding: 25px;
     border-radius: 10px;
+    /* More prominent shadow for dark theme */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+
+    /* Center the box */
+    width: 90%;
+    max-width: 450px;
+    margin: 15% auto 0 auto;
     position: relative;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: var(--color-text-dark, #f0f0f0); /* White text */
+    font-family: 'Times New Roman', Times, serif; /* Enforce font */
+}
+
+
+#daily-event-modal h2 {
+    color: var(--color-text-dark, #f0f0f0);
+    border-bottom: 1px solid var(--color-border-light, #444444);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .close-daily-modal-btn {
@@ -1127,32 +852,51 @@ nav a:hover {
     font-weight: bold;
 }
 
+.close-daily-modal-btn {
+    color: var(--color-placeholder, #888888); /* Gray close button */
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 20px;
+}
+
 .close-daily-modal-btn:hover,
 .close-daily-modal-btn:focus {
-    color: #000;
+    color: var(--color-text-dark, #f0f0f0);
     text-decoration: none;
     cursor: pointer;
 }
 
+
 #daily-event-list {
-    max-height: 300px;
-    overflow-y: auto;
+    max-height: 250px; /* Limits the height of the list */
+    overflow-y: auto; /* Adds scrollbar when needed */
     margin-top: 15px;
     padding-right: 10px;
 }
+
 
 .daily-event-item a {
     display: block;
     padding: 8px 0;
     font-size: 1rem;
-    color: #007bff;
+    /* CRITICAL FIX: Link color is now white */
+    color: var(--color-primary-button, #ffffff);
     text-decoration: none;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border-light, #444444);
+    transition: color 0.2s;
 }
 
 .daily-event-item a:hover {
     text-decoration: underline;
-    color: #0056b3;
+    /* Subtle hover on the white link */
+    color: var(--color-placeholder, #888888);
+}
+
+#daily-event-modal .modal-note {
+    padding-top: 10px;
+    font-size: 0.9em;
+    color: var(--color-placeholder, #888888);
 }
 
 
@@ -1219,11 +963,11 @@ nav a:hover {
 }
 
 #collegeSearchButton {
-    /* Style the button to look like just an icon */
-    background: #000; /* Dark background */
-    color: white;
+    /* Set the button to White background with Black icon */
+    background: #ffffff;
+    color: var(--color-up-text, #000000); /* Black icon color (from variable) */
     border: none;
-    padding: 9px 12px; /* Adjust padding to match input height */
+    padding: 9px 12px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
@@ -1278,116 +1022,44 @@ nav a:hover {
 
 /* Ensure the search input box is what sets the width and position */
 .college-search-container input {
-    width: calc(100% - 30px); /* Adjust based on your button/icon width */
+    flex-grow: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border-light, #444444); /* Darker border */
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: var(--color-secondary-bg, #292929); /* Dark input background */
+    color: var(--color-text-dark, #f0f0f0); /* White text color */
 }
 
+#collegeSearchInput::placeholder {
+    color: var(--color-placeholder, #888888); /* Gray placeholder text */
+}
+
+#collegeSearchButton {
+    /* Style the button to use the accent color */
+    background: var(--color-primary-button, #A9A9A9);
+    color: var(--color-up-text, #000000); /* Black text for contrast */
+    border: none;
+    padding: 9px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
 
 /* Override the browser's default link color for college names */
 .college-item .college-name-link {
-    color: black; /* Change to black */
-    text-decoration: none; /* Remove underline */
+    color: var(--color-text-dark, #f0f0f0); /* White text */
+    text-decoration: none;
     font-weight: 500;
 }
 
 .college-item .college-name-link:hover {
-    color: #333; /* Slightly darker or same color on hover */
-    text-decoration: underline; /* Optional: add underline on hover */
+    color: var(--color-text-dark, #f0f0f0);
+    text-decoration: underline;
 }
 
 
-.event-college-name {
-    display: block; /* Ensures it starts on its own line */
-    font-size: 0.85rem;
-    color: #65676b; /* Use a medium gray color */
-    margin-top: -3px; /* Pulls it slightly closer to the event name above */
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-
-
-
-
-
-
-
-
-
-/* General style for all form groups */
-.form-group {
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-weight: 600;
-    color: #1c1e21;
-    margin-bottom: 8px;
-    font-size: 0.95rem;
-}
-
-/* Style for all text inputs, textareas, and select boxes */
-.event-creation-form input[type="text"],
-.event-creation-form input[type="date"],
-.event-creation-form input[type="number"],
-.event-creation-form input[type="file"],
-.event-creation-form textarea,
-.event-creation-form select {
-    width: 100%;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px; /* Rounded corners */
-    font-size: 1rem;
-    box-sizing: border-box;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-/* Focus state for professional feel */
-.event-creation-form input:focus,
-.event-creation-form textarea:focus,
-.event-creation-form select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-    outline: none;
-}
-
-/* Two-column layout for location/city and state */
-.location-group {
-    display: flex;
-    gap: 20px;
-}
-
-.location-group .form-group {
-    flex: 1; /* Makes city and state fields share the space equally */
-}
-
-/* Style for the Description textarea (where the long text lives) */
-.description-group textarea {
-    min-height: 150px;
-    resize: vertical;
-    white-space: pre-wrap; /* Ensures the placeholder text respects new lines */
-}
-
-
-/* Submit button style */
-.create-event-btn {
-    background-color: #000;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 25px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.2s;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.create-event-btn:hover {
-    background-color: #333;
-}
 
 /* Phone number input container styles */
 .phone-input-container {
@@ -1524,34 +1196,6 @@ body {
 
 
 
-/* Event Log/Registrations List Page */
-.event-log-item {
-    display: flex;
-    flex-direction: column;
-    padding: 15px 20px;
-}
-
-.event-log-item h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-
-.view-registrations-btn {
-    display: inline-block;
-    background-color: #007bff;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-top: 10px;
-    transition: background-color 0.2s;
-}
-
-.view-registrations-btn:hover {
-    background-color: #0056b3;
-}
-
 
 
 
@@ -1611,11 +1255,12 @@ body {
 
 /* Styling for the new filtered event highlight (Pink) */
 .calendar-day.filtered-event-day {
-    background-color: #ffb6c1; /* Light Pink */
-    color: #880022; /* Darker text for readability */
+    /* Adjusting filtered event color for dark theme visibility */
+    background-color: #924B70; /* Darker, subtle pink/purple */
+    color: var(--color-text-dark, #f0f0f0);
     font-weight: bold;
-    border: 1px solid #ff69b4;
-    border-radius: 50%; /* Maintains the rounded look */
+    border: 1px solid #BB86FC; /* Accent border */
+    border-radius: 50%;
 }
 
 
@@ -1627,20 +1272,24 @@ body {
     font-size: 0.95rem;
     font-weight: 600;
     padding: 10px 20px;
-    /* REDUCE MARGIN-TOP TO PULL IT UP, REMOVE BORDER-BOTTOM FOR CLEANER LOOK */
     margin: 0 0 5px 0;
-    border-bottom: none; /* Remove separator line here if you want it tighter */
+    border-bottom: none;
+    color: var(--color-text-dark, #f0f0f0); /* Set to white text */
+    transition: color 0.2s ease;
 }
 
 
 /* Optional: Add a visual cue when hovering */
 .event-filter-trigger:hover {
-    color: #2e1503; /* Change color on hover */
+    color: #A9A9A9; /* Change color to accent (purple) on hover */
 }
 
 
 
-/* 1. Modal Container (The Backdrop) */
+
+
+
+/* --- 1. Filter Modal Backdrop --- */
 #filterModal {
     /* Keep these properties to cover the whole screen and provide backdrop */
     display: none; /* Controlled by JS; starts hidden */
@@ -1651,215 +1300,103 @@ body {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.6);
-
-    /* --- CRITICAL CHANGE FOR CENTERING --- */
-    /* Use display: block or unset the flex properties */
-    display: block;
+    /* CRITICAL FIX: Dark backdrop */
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
-/* 2. Modal Content (The White Box) */
+/* --- 2. Filter Modal Content Box (The White Box in the image) --- */
 #filterModal .modal-content {
-    background-color: #fefefe;
+    /* CRITICAL FIX: Dark card background */
+    background-color: var(--color-left-bg, #1e1e1e);
     padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* More prominent shadow for dark theme */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
 
-    /* Center the box horizontally by setting fixed width and margins */
+    /* Center the box */
     width: 90%;
     max-width: 400px;
-
-    /* CRITICAL CHANGE: Set margin to auto for horizontal centering
-       and adjust top margin to place it nicely in the viewport center. */
-    margin: 10% auto 0 auto; /* 10% from the top, and horizontally centered */
-
+    margin: 10% auto 0 auto;
     position: relative;
+    color: var(--color-text-dark, #f0f0f0); /* White text */
+    font-family: 'Times New Roman', Times, serif; /* Enforce font */
 }
 
-/* 3. Filter Controls Inside Modal (Styling the content) */
-.filter-controls-modal {
-    padding-top: 15px;
-}
-
-.filter-controls-modal .filter-group {
+/* --- 3. Modal Header and Close Button --- */
+#filterModal h2 {
+    color: var(--color-text-dark, #f0f0f0);
+    border-bottom: 1px solid var(--color-border-light, #444444);
+    padding-bottom: 10px;
     margin-bottom: 15px;
 }
 
-/* 4. Close Button */
 #closeFilterModal {
-    color: #aaa;
+    color: var(--color-placeholder, #888888); /* Gray close button */
     float: right;
     font-size: 28px;
     font-weight: bold;
-    cursor: pointer;
     line-height: 20px;
 }
 
 #closeFilterModal:hover,
 #closeFilterModal:focus {
-    color: #333;
+    color: var(--color-text-dark, #f0f0f0);
     text-decoration: none;
     cursor: pointer;
 }
 
 
-
-
-
-
-/* --- PROFILE PAGE STYLING (profile.html) --- */
-
-.profile-container {
-    /* Ensures the profile content takes up the main feed area */
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.profile-card {
-    /* Mimics the card/section structure seen on the dashboard */
-    background-color: #ffffff; /* White card background */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    margin-bottom: 20px;
-}
-
-.profile-card h1 {
-    font-size: 1.8em;
-    color: #333;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-/* Profile Summary Section */
-.profile-header-summary {
-    text-align: center;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px dashed #ddd;
-}
-
-.large-profile-icon {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #007bff; /* Primary brand color border */
-    margin-bottom: 15px;
-}
-
-.profile-header-summary h2 {
-    font-size: 1.5em;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.email-detail, .college-detail, .member-since {
-    color: #666;
-    font-size: 0.95em;
-    margin-bottom: 5px;
-}
-
-.fa-envelope, .fa-graduation-cap {
-    margin-right: 8px;
-    color: #007bff;
-}
-
-/* Form Editing Section */
-.profile-edit-section h3 {
-    font-size: 1.4em;
-    color: #555;
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-.profile-update-form fieldset {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 25px;
-}
-
-.profile-update-form legend {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #007bff;
-    padding: 0 10px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.form-group input[type="text"],
-.form-group input[type="email"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Ensures padding doesn't widen the input */
-}
-
-/* Styling for the current profile icon display */
-.current-file {
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.current-file img {
-    margin-right: 5px;
-}
-
-.primary-btn {
-    /* Use your existing button style if you have one */
-    background-color: #28a745; /* Success color for save */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
-}
-
-.primary-btn:hover {
-    background-color: #218838;
-}
-
-/* Message styling (for Django success/error messages) */
-.messages {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 20px;
-}
-
-.messages li {
-    padding: 10px 15px;
-    border-radius: 4px;
-    margin-bottom: 10px;
+/* --- 4. Form Controls (Labels, Inputs, Selects) --- */
+.filter-controls-modal label {
+    color: var(--color-text-dark, #f0f0f0); /* White labels */
     font-weight: 500;
 }
 
-.messages .success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+/* Styling for Select inputs (Event Type, Fees) and Text Inputs (State Search) */
+.filter-controls-modal select,
+.filter-controls-modal input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border-light, #444444);
+    border-radius: 4px;
+    /* Dark Theme Colors */
+    background-color: var(--color-secondary-bg, #292929);
+    color: var(--color-text-dark, #f0f0f0);
+    font-family: 'Times New Roman', Times, serif;
 }
 
-.messages .error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+/* Placeholder color fix */
+.filter-controls-modal input::placeholder {
+    color: var(--color-placeholder, #888888);
+}
+
+/* Checkbox/Filter Group Styles */
+.filter-group-checkboxes label {
+    color: var(--color-placeholder, #888888); /* Gray text for checkboxes */
+}
+
+/* Checkbox alignment fix */
+.filter-group-checkboxes input[type="checkbox"] {
+    width: auto;
+    margin-right: 5px;
+}
+
+
+/* --- 5. Apply Filters Button (White Accent) --- */
+#apply-filters-btn {
+    /* White Button with Black Text */
+    background-color: var(--color-primary-button, #ffffff);
+    color: var(--color-up-text, #000000);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+#apply-filters-btn:hover {
+    background-color: #dcdcdc; /* Subtle gray hover */
 }

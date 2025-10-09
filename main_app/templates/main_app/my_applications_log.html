@@ -1,40 +1,185 @@
-{% extends "main_app/base.html" %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Applications Log</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-{% block content %}
-<div class="registration-page-container">
-    <div class="registration-header">
+    <style>
+        /*
+        --------------------------------------------------
+        MY APPLICATIONS LOG PAGE STYLING (Monochrome Dark Theme)
+        --------------------------------------------------
+        */
+
+        :root {
+            /* MONOCHROME ACCENT CHANGE: Uses only white/gray shades */
+            --color-primary-button: #ffffff; /* White accent color (for buttons/accents) */
+            --color-up-text: #000000; /* Text on bright button (MUST be black) */
+            --color-text-dark: #f0f0f0; /* Off-white text */
+            --color-border-light: #444444; /* Darker border lines */
+            --color-secondary-bg: #292929; /* Darker input/hover background */
+            --color-placeholder: #888888; /* Gray text for details */
+            --color-left-bg: #1e1e1e; /* Floating card background */
+            --color-link: #ffffff; /* Links should now be white/light gray */
+            --color-item-bg: #292929; /* Item background, slightly lighter than card */
+        }
+
+        /* 1. Global Page Background Fix */
+        body {
+            background-color: #121212 !important;
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        /* 2. Main Card Container (Floating Card) */
+        .clean-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            /* CRITICAL: Apply dark card background */
+            background-color: var(--color-left-bg, #1e1e1e);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        /* 3. Header and Back Link */
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--color-border-light, #444444);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .feed-header h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        .feed-header a {
+            text-decoration: none;
+            color: var(--color-link, #ffffff); /* White link */
+            font-weight: 500;
+        }
+
+        .feed-header a:hover {
+            color: var(--color-placeholder, #888888); /* Subtle gray hover */
+        }
+
+        /* 4. Application List Items */
+        .application-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .application-item {
+            /* Background for individual application items */
+            background-color: var(--color-item-bg, #292929);
+            border: 1px solid var(--color-border-light, #444444);
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.2s, background-color 0.2s;
+        }
+
+        .application-item:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            background-color: var(--color-tertiary-bg, #333333); /* Darker hover */
+        }
+
+        .application-item h3 a {
+            text-decoration: none;
+            color: var(--color-link, #ffffff); /* White link */
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .application-item h3 a:hover {
+            text-decoration: underline;
+        }
+
+        .application-item p {
+            color: var(--color-text-dark, #f0f0f0);
+            margin: 5px 0;
+        }
+
+        .application-item strong {
+            color: var(--color-placeholder, #888888);
+            font-weight: normal;
+        }
+
+        /* 5. Status Indicators (If applicable) */
+        .status-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 15px;
+        }
+
+        .status-Applied {
+            background-color: #333333;
+            color: #ffffff;
+            border: 1px solid #666666;
+        }
+
+        .status-Accepted {
+            background-color: #38703E; /* Dark Green */
+            color: #ffffff;
+        }
+
+        .status-Rejected {
+            background-color: #703838; /* Dark Red */
+            color: #ffffff;
+        }
+
+        /* 6. No Applications Message */
+        .clean-container p {
+            color: var(--color-placeholder, #888888);
+            padding: 20px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="clean-container">
+    <div class="feed-header">
         <h1>My Applications Log</h1>
-        <a href="{% url 'dashboard' %}" class="back-to-dashboard-link">&larr; Back to Dashboard</a>
+        <a href="{% url 'dashboard' %}" style="text-decoration: none; font-weight: 500;">&larr; Back to Dashboard</a>
     </div>
 
-    <div class="applications-list">
-        {% for application in user_applications %}
-        <div class="application-card">
-            
-            <h2>{{ application.event.event_name }}</h2>
-            
-            <p><strong>Event Type:</strong> {{ application.event.event_type.name }}</p>
-            <p><strong>Date:</strong> {{ application.event.date_time|date:"F d, Y P" }}</p>
-            <p><strong>Location:</strong> {{ application.event.location }}</p>
-            
-            <p class="application-status">
-                <strong>Your Application Status:</strong> 
-                <span class="status-{{ application.status|lower }}">{{ application.status|default:"Pending" }}</span>
-            </p>
+    <div class="application-list">
+        {% if user_applications %}
+            {% for app in user_applications %}
+                <div class="application-item">
+                    <h3 class="application-title">
+                        <a href="{% url 'event_detail' app.event.event_link_key %}">
+                            {{ app.event.event_name }}
+                        </a>
+                        <span class="status-pill status-{{ app.status }}">{{ app.status }}</span>
+                    </h3>
 
-            <a href="{% url 'event_details' event_title=application.event.event_name %}" class="btn btn-primary view-registrations-btn">
-                View Application Status
-            </a>
-        </div>
-        {% empty %}
-        <div class="no-applications">
-            <p>You have not submitted any event applications yet.</p>
-            <p>Go to the <a href="{% url 'dashboard' %}">Home</a> page to find events!</p>
-        </div>
-        {% endfor %}
+                    <p><strong>Application Date:</strong> {{ app.applied_at|date:"F d, Y P" }}</p>
+                    <p><strong>Event Date:</strong> {{ app.event.date_time|date:"F d, Y P" }}</p>
+                    <p><strong>Organizer:</strong> {{ app.event.organizer.username }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>You have not submitted any applications yet.</p>
+        {% endif %}
     </div>
-
 </div>
 
-{% endblock content %}
+</body>
+</html>

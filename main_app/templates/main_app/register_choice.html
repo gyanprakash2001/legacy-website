@@ -5,10 +5,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | Legacy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
     <style>
-        /* CSS to center the choice container cleanly in the viewport */
+        /* CRITICAL: Copy of Dark Theme Variables for Local Consistency */
+        html, body {
+            background-color: #121212; /* Dark background */
+            color: #f0f0f0; /* Off-white text */
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        :root {
+            --color-left-bg: #1e1e1e;
+            --color-right-bg: #1e1e1e;
+            --color-logo-text: #ffffff;
+            --color-text-dark: #f0f0f0;
+            --color-primary-button: #BB86FC; /* Accent purple */
+            --color-up-text: #000000; /* Text on accent button */
+            --color-card-background: #1f1f1f; /* Dark background for cards */
+            --color-border-light: #444444;
+        }
+
+        /* 1. Full Page Dark Theme Container */
         .choice-page {
             display: flex;
             flex-direction: column;
@@ -16,55 +37,70 @@
             align-items: center;
             min-height: 100vh;
             text-align: center;
-            background-color: #e6e6fa;
+            color: var(--color-text-dark);
+            background-color: var(--color-left-bg); /* Use dark variable */
+            font-family: 'Times New Roman', Times, serif; /* Enforce Font */
         }
 
+        /* 2. Dark Card Background */
         .choice-container {
-            background: white;
+            background: var(--color-card-background); /* Dark card */
             padding: 50px;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.09); /* Light shadow */
             max-width: 450px;
             width: 90%;
         }
 
+        /* 3. Title and Subtitle */
         h1 {
-            font-family: 'Rammetto One', cursive;
+            font-family: 'Times New Roman', Times, serif; /* Enforce Font */
+            color: var(--color-text-dark); /* White text */
             font-size: 2.2em;
             margin-bottom: 5px;
         }
 
         .subtitle {
-            color: #888;
+            color: var(--color-text-dark); /* Gray text */
             margin-bottom: 30px;
         }
 
+        /* 4. Button Styles */
         .choice-button {
             display: block;
             width: 100%;
             padding: 15px 20px;
             margin: 15px 0;
-            border: none;
+            border: 2px solid var(--color-border-light);
             border-radius: 8px;
-            text-decoration: none;
+            color: var(--color-text-dark);
+            background-color: var(--color-card-background);
             font-size: 1.1em;
             font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
             box-sizing: border-box;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            font-family: 'Times New Roman', Times, serif; /* Enforce Font */
         }
 
-        /* Styling the Email Button (Primary Blue) */
+        /* Email Button (Accent) */
         .email-button {
-            background-color: #3b5998;
-            color: white;
+            background-color: var(--color-card-background); /* Dark background */
+            color: var(--color-text-dark);
+            border: 2px solid var(--color-border-light); /* Dark border */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Styling the Google Button (White with Border) */
+        .email-button:hover {
+            border-color: var(--color-primary-button);
+        }
+
+        /* Google Button (Bordered/High Contrast) */
         .google-button {
-            background-color: white;
-            color: #444; /* Changed text color for better contrast */
-            border: 1px solid #ddd;
+            background-color: var(--color-card-background); /* Dark background */
+            color: var(--color-text-dark);
+            border: 2px solid var(--color-border-light); /* Dark border */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -73,31 +109,35 @@
         .google-icon {
             font-size: 18px;
             margin-right: 10px;
-            color: #4285F4; /* Placeholder color */
+            color: #4285F4; /* Keep Google Blue for branding */
         }
 
+        .google-button:hover {
+            border-color: var(--color-primary-button);
+        }
+
+        /* Divider */
         .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #aaa;
-            margin: 20px 0;
+            color: var(--color-text-dark);
+        }
+        .divider::before, .divider::after {
+            border-bottom: 1px solid var(--color-border-light);
         }
 
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #eee;
+        /* Login link */
+        .choice-container a {
+            /* CRITICAL FIX: Set default color to white/light text */
+            color: var(--color-text-dark);
+            font-family: 'Times New Roman', Times, serif;
+            transition: color 0.2s ease; /* Add transition for smooth hover */
         }
 
-        .divider:not(:empty)::before {
-            margin-right: .5em;
+        /* NEW: Apply accent color only on hover */
+        .choice-container a:hover {
+            color: var(--color-primary-button); /* Use Accent color on hover */
+            text-decoration: underline;
         }
 
-        .divider:not(:empty)::after {
-            margin-left: .5em;
-        }
     </style>
 </head>
 <body>
@@ -117,7 +157,7 @@
                 SIGN UP WITH GOOGLE
             </a>
 
-            <p style="margin-top: 20px; font-size: 0.9em; color: #666;">
+            <p style="margin-top: 20px; font-size: 0.9em; color: var(--color-placeholder);">
                 Already have an account? <a href="{% url 'login' %}">Log In</a>
             </p>
         </div>

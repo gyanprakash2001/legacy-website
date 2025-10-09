@@ -5,61 +5,152 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Registration</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <style>
+        /* CRITICAL: Copy dark theme styles for consistency and layout */
+        .signup-page {
+            width: 100%;
+            min-height: 100vh;
+            /* Use dark theme background variables */
+            background: linear-gradient(to right, var(--color-left-bg) 70%, var(--color-right-bg) 30%);
+
+            /* CRITICAL FIX: Use flexbox to center the content */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            /* Position header back to its static top-left location */
+            position: fixed;
+            top: 25px;
+            left: 60px;
+            z-index: 20;
+        }
+
+        /* Title Style */
+        .signup-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.5rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--color-text-dark); /* White */
+            text-shadow: 1.2px 1.2px 0 #000000;
+            text-align: center; /* Center the title */
+        }
+
+        /* Form Card - Ensure it adopts the dark theme card style */
+        .signup-form {
+            /* Keep size fixed, now it will be centered by parent flex container */
+            width: 350px;
+            padding: 28px 24px;
+            background: var(--color-card-background); /* Dark background */
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.09);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-sizing: border-box;
+        }
+
+        /* Form Inputs and Labels - Inherit dark styles (copy from your original code) */
+        .signup-form label {
+            color: var(--color-text-dark);
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .signup-form input {
+            background: var(--color-input-background);
+            color: var(--color-text-dark);
+            border: 2px solid var(--color-border-light);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 1.1rem;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* Button Style - Inherit dark bordered style */
+        .register-btn {
+            background: var(--color-card-background);
+            color: var(--color-text-dark);
+            border: 2px solid var(--color-border-light);
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 18px;
+            padding: 12px 0;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: none;
+            transition: background 0.2s, border-color 0.2s;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .register-btn:hover {
+            background: #333333;
+            border-color: var(--color-primary-button);
+        }
+
+        /* Login Link Fix - White text by default */
+        .signup-page a {
+            color: var(--color-text-dark);
+            transition: color 0.2s ease;
+        }
+        .signup-page a:hover {
+            color: var(--color-primary-button);
+        }
+
+    </style>
 </head>
 <body>
     <div class="signup-page">
         <header>
             <div class="logo">Legacy</div>
         </header>
-        <div class="columns">
-            <div class="left-pane">
-                <div style="padding-top: 50px;">
-                    <h1 class="signup-title">
-                        Sign Up with Email
-                    </h1>
 
-                    <form method="post" class="signup-form" autocomplete="off">
-                        {% csrf_token %}
+        <div class="centered-content">
+            <h1 class="signup-title">
+                Sign Up with Email
+            </h1>
 
-                        <div class="form-group">
-                            {{ form.first_name.label_tag }}
-                            {{ form.first_name }}
-                        </div>
-                         <div class="form-group">
-                            {{ form.last_name.label_tag }}
-                            {{ form.last_name }}
-                        </div>
+            <form method="post" class="signup-form" autocomplete="off" action="{% url 'register' %}">
+                {% csrf_token %}
 
-                        <div class="form-group">
-                            {{ form.email.label_tag }}
-                            {{ form.email }}
-                        </div>
-                        <div class="form-group">
-                            {{ form.password.label_tag }}
-                            {{ form.password }}
-                        </div>
-                        <div class="form-group">
-                            {{ form.password_confirm.label_tag }}
-                            {{ form.password_confirm }}
-                        </div>
-
-                        <button type="submit" class="register-btn">Continue to Profile Setup</button>
-                    </form>
-
-                    <p style="margin-top: 20px; text-align: center;">
-                        Already have an account? <a href="{% url 'login' %}">Log In</a>
-                    </p>
+                <div class="form-group">
+                    {{ form.first_name.label_tag }}
+                    {{ form.first_name }}
                 </div>
-            </div>
-
-            <div class="right-pane">
-                <div class="signup-image-card">
-                    <img src="{% static 'images/dog_plane.jpg' %}" alt="Dog and Plane" />
+                 <div class="form-group">
+                    {{ form.last_name.label_tag }}
+                    {{ form.last_name }}
                 </div>
-            </div>
+
+                <div class="form-group">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                </div>
+                <div class="form-group">
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                </div>
+                <div class="form-group">
+                    {{ form.password_confirm.label_tag }}
+                    {{ form.password_confirm }}
+                </div>
+
+                <button type="submit" class="register-btn">Continue to Profile Setup</button>
+            </form>
+
+            <p style="margin-top: 20px; text-align: center;">
+                Already have an account? <a href="{% url 'login' %}">Log In</a>
+            </p>
         </div>
+
     </div>
 </body>
 </html>

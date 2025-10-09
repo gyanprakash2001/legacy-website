@@ -46,4 +46,5 @@ urlpatterns = [
     path('college-autocomplete/', views.college_autocomplete, name='college_autocomplete'),
     path('api/state-autocomplete/', views.state_autocomplete, name='state_autocomplete'),
     path('community/toggle-follow/', views.toggle_follow_college, name='toggle_follow_college'),
+    path('event/<uuid:event_link_key>/', views.event_detail_view, name='event_detail'),
 ]

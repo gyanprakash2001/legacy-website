@@ -5,9 +5,169 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to LEGACY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
+
+    <style>
+        /*----------------------------------*/
+        /* Global & Font Setup (Applying Dark Theme and Times New Roman) */
+        /*----------------------------------*/
+        html, body {
+            /* These base styles are needed for the dark theme background and font */
+            background-color: #121212; /* Very dark gray/black */
+            color: #f0f0f0; /* Off-white text */
+            font-family: 'Times New Roman', Times, serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        :root {
+            /* Re-define dark theme variables here to ensure they are available to inline styles */
+            --color-left-bg: #1e1e1e; /* Darker gray for section backgrounds */
+            --color-right-bg: #1e1e1e;
+            --color-logo-text: #ffffff; /* White logo */
+            --color-text-dark: #f0f0f0; /* Off-white text */
+            --color-primary-button: #BB86FC; /* Light purple/accent for contrast */
+            --color-up-text: #000000; /* Text color for elements that must stay bright */
+            --color-welcome-text: #f0f0f0; /* White welcome text */
+        }
+
+
+        /*----------------------------------*/
+        /* Landing Page Styles              */
+        /*----------------------------------*/
+        .landing-page {
+            display: flex;
+            min-height: 100vh;
+            /* Use dark theme background variables */
+            background: linear-gradient(to right, var(--color-left-bg) 70%, var(--color-right-bg) 30%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 25px 60px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 20;
+        }
+
+        .logo {
+            font-weight: 1000;
+            font-size: 1.4rem;
+            color: var(--color-logo-text); /* White logo text */
+            letter-spacing: -0.5px;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+                text-decoration: none;
+                color: var(--color-text-dark);
+                margin-left: 30px;
+                font-size: 1.05rem;
+                font-weight: 600;
+                transition: color 0.3s ease, transform 0.2s ease;
+                font-family: 'Times New Roman', Times, serif; /* <--- CRITICAL FIX */
+            }
+
+        nav a:hover {
+            color: var(--color-primary-button); /* Accent color on hover */
+            transform: translateY(-2px);
+        }
+
+        .sign-up-button {
+            background-color: transparent;
+            color: var(--color-text-dark); /* Black text on accent button */
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .sign-up-button:hover {
+            background-color: var(--color-primary-button);
+            color: var(--color-up-text);
+            border-color: var(--color-primary-button);
+        }
+
+        .welcome-section {
+        position: absolute;
+        /* Move content slightly to the right to visually balance the layout */
+        left: 40%; /* <--- CHANGED from 35% to 40% */
+        top: 50%; /* Center vertically */
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        text-align: left;
+        }
+
+        .welcome-section h1 {
+        /* CRITICAL FIX: Change the font-family */
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 5rem;
+        font-weight: 1000;
+        color: var(--color-welcome-text);
+        margin: 0;
+        letter-spacing: 5px;
+        text-shadow: 1.2px 1.2px 0 #000000; /* Dark shadow for contrast */
+    }
+
+        .login-button {
+        display: inline-block;
+        text-decoration: none;
+        color: var(--color-text-dark);
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-top: 20px;
+        margin-left: 160px;
+        padding: 10px 20px;
+        border: 2px solid var(--color-text-dark);
+        border-radius: 25px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        font-family: 'Times New Roman', Times, serif; /* <--- CRITICAL FIX */
+        }
+
+        .login-button:hover {
+            background-color: var(--color-primary-button);
+            color: var(--color-up-text);
+            border-color: var(--color-primary-button);
+        }
+
+        .image-section {
+            position: absolute;
+            top: 120px;
+            left: 80%;
+            transform: translateX(-50%);
+            z-index: 12;
+            width: 410px;
+            height: 510px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .image-section img {
+            width: 80%;
+            height: 80%;
+            object-fit: cover;
+            border-radius: 0px;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+    </style>
+    </head>
 <body>
     <div class="landing-page">
         <header>

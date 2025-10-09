@@ -63,6 +63,7 @@ def create_post(request):
 
 
 @login_required
+@profile_setup_required  # This enforces the redirect to the setup page if profile is incomplete
 def dashboard(request):
     user = request.user
 

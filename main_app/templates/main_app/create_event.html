@@ -4,7 +4,221 @@
 <head>
     <meta charset="UTF-8">
     <title>Create an Event</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        /*
+        --------------------------------------------------
+        CREATE EVENT PAGE STYLING (Monochrome Dark Theme)
+        --------------------------------------------------
+        */
+
+        :root {
+            /* MONOCHROME ACCENT CHANGE:
+            The primary button and accent color is now pure white/light gray.
+            --color-up-text must remain BLACK for readability on white backgrounds.
+            */
+            --color-primary-button: #ffffff; /* White accent color */
+            --color-up-text: #000000; /* Text on bright button (MUST be black) */
+            --color-text-dark: #f0f0f0; /* Off-white text */
+            --color-border-light: #444444; /* Darker border lines */
+            --color-secondary-bg: #292929; /* Darker input background */
+            --color-placeholder: #888888; /* Gray text for details */
+            --color-left-bg: #1e1e1e; /* Floating card background */
+            --color-success-bg: #38703E; /* Dark Success Background */
+            --color-success-border: #4CAF50; /* Success Border */
+            --color-link: #ffffff; /* Links should now be white/light gray */
+        }
+
+        /* 1. Global Page Background Fix */
+        body {
+            background-color: #121212 !important;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* 2. Form Container (The floating card wrapper) */
+        .form-container {
+            max-width: 800px;
+            width: 90%;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: var(--color-left-bg, #1e1e1e);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            color: var(--color-text-dark, #f0f0f0);
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .form-header h1 {
+            color: var(--color-text-dark, #f0f0f0);
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--color-border-light, #444444);
+            padding-bottom: 10px;
+        }
+
+        /* Section Headings */
+        .form-section h2 {
+            color: var(--color-text-dark, #f0f0f0);
+            font-size: 1.6em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--color-border-light, #444444);
+            padding-bottom: 5px;
+        }
+
+        /* 3. Form Groups and Labels */
+        .form-group label {
+            font-weight: 600;
+            color: var(--color-text-dark, #f0f0f0); /* White labels */
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .location-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .location-group .form-group {
+            flex: 1;
+        }
+
+
+        /* 4. Inputs, Textareas, and Selects */
+        .event-creation-form input[type="text"],
+        .event-creation-form input[type="date"],
+        .event-creation-form input[type="number"],
+        .event-creation-form input[type="file"],
+        .event-creation-form textarea,
+        .event-creation-form select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--color-border-light, #444444); /* Dark border */
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: var(--color-secondary-bg, #292929);
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        /* Input Focus State (Uses a soft white glow instead of purple) */
+        .event-creation-form input:focus,
+        .event-creation-form textarea:focus,
+        .event-creation-form select:focus {
+            border-color: var(--color-primary-button, #ffffff); /* White border on focus */
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25); /* White glow */
+            outline: none;
+        }
+
+        .description-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* 5. Phone Input Container Fix */
+        .phone-input-container {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--color-border-light, #444444);
+            border-radius: 8px;
+            padding: 0;
+            box-sizing: border-box;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--color-secondary-bg, #292929);
+        }
+
+        .phone-input-container .phone-prefix {
+            background-color: var(--color-tertiary-bg, #333333);
+            padding: 10px 10px;
+            font-size: 1rem;
+            color: var(--color-placeholder, #888888);
+            border-right: 1px solid var(--color-border-light, #444444);
+        }
+
+        .phone-input-container input {
+            border: none;
+            background-color: transparent;
+            padding: 10px 15px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 6. Checkbox/Radio Styles */
+        .form-check {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--color-placeholder, #888888);
+        }
+
+        /* 7. Generated Link Container (Success/Link display) */
+        .generated-link-container {
+            background-color: var(--color-success-bg, #38703E);
+            border: 1px solid var(--color-success-border, #4CAF50);
+            color: var(--color-text-dark, #f0f0f0);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .generated-link-container h3 {
+            color: var(--color-text-dark, #f0f0f0);
+            font-size: 1.5rem;
+        }
+
+        .generated-link {
+            /* Link color is now white/light gray */
+            font-family: monospace;
+            font-size: 1rem;
+            color: var(--color-link, #ffffff);
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background-color: var(--color-primary-button, #ffffff);
+            color: var(--color-up-text, #000000); /* Black text on white button */
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* 8. Submit Button style (Now a White button with Black Text) */
+        .create-event-btn {
+            background-color: var(--color-primary-button, #ffffff);
+            color: var(--color-up-text, #000000); /* Black text on white button */
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .create-event-btn:hover {
+            background-color: #dcdcdc; /* Slightly darker white/light gray on hover */
+        }
+
+        /* 9. Django Messages (Success/Error) */
+        .messages .success {
+            background-color: var(--color-success-bg, #38703E);
+            color: var(--color-text-dark, #f0f0f0);
+            border: 1px solid var(--color-success-border, #4CAF50);
+        }
+        /* Error messages will implicitly use the white text */
+
+    </style>
 </head>
 <body>
 

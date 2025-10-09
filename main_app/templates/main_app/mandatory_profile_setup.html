@@ -6,38 +6,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Complete Profile Setup</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <style>
-        /* CSS for the Blurring/Locking Effect (If not in style.css) */
+        /*
+        ==================================================
+        CRITICAL FIX: APPLYING DARK THEME STYLING TO FORM FIELDS
+        ==================================================
+        */
+        :root {
+            /* Define Dark Theme Variables (copied for context) */
+            --color-left-bg: #1e1e1e;
+            --color-right-bg: #1e1e1e;
+            --color-logo-text: #ffffff;
+            --color-text-dark: #f0f0f0;
+            --color-primary-button: #BB86FC;
+            --color-up-text: #000000;
+            --color-card-background: #1f1f1f;
+            --color-border-light: #444444;
+            --color-secondary-bg: #292929;
+            --color-placeholder: #888888;
+        }
 
-        /* The entire signup-page/columns structure now acts as the blurred background */
-        /* To create the full-screen lock and blur without modifying existing classes,
-           we will ensure the body is covered and then rely on the JS warning. */
-
-        /* Optional: Add a subtle overlay/blur directly to the page content container
-           if you need a visual enforcement cue. */
-
+        /* 1. Page & Form Container Setup */
         .signup-page {
-            /* If this is the main container, you can add padding or alignment here */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Center the content vertically */
+            justify-content: center;
+            align-items: center; /* Center the form column on the page */
+            background-color: var(--color-left-bg); /* Match the dark theme background */
+            color: var(--color-text-dark);
+            font-family: 'Times New Roman', Times, serif;
         }
 
         .columns {
-            /* Ensure the form pane is prominent and the image pane acts as background */
+            display: flex;
+            width: 800px; /* Adjust width as needed for your design */
             align-items: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        /* Instruction text styling */
+        .left-pane {
+            /* This is the form pane */
+            background-color: var(--color-card-background);
+            padding: 40px;
+            flex: 1;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .right-pane {
+            /* This is the image pane */
+            flex: 1;
+            overflow: hidden;
+        }
+        .signup-image-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 2. Form/Field Styling */
+        .signup-title {
+            color: var(--color-text-dark);
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+        }
+
         .setup-instruction {
-            color: #555;
+            color: var(--color-placeholder); /* Use gray text */
             font-size: 1.1em;
             margin-bottom: 20px;
-            text-align: center;
+            text-align: left; /* Align text with form fields */
         }
+
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group label {
+            color: var(--color-text-dark);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Target ALL input/select fields within the form */
+        .signup-form input:not([type="checkbox"]),
+        .signup-form select {
+            background: var(--color-secondary-bg); /* Dark input background */
+            color: var(--color-text-dark);
+            border: 2px solid var(--color-border-light);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* Special styling for the SELECT field (College Name) */
+        .signup-form select {
+             /* Reset background arrow color for dark theme if necessary */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M10.293%2C3.293%20L6%2C7.586%20L1.707%2C3.293%20L0.293%2C4.707%20L6%2C10.414%20L11.707%2C4.707%20Z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px; /* Space for the custom arrow */
+        }
+
+        /* 3. Button Styling */
+        .register-btn {
+            background: var(--color-primary-button); /* Accent color */
+            color: var(--color-up-text); /* Black text */
+            border: none; /* Remove border if using accent color */
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 12px 0;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .register-btn:hover {
+            background: #A9A9A9; /* Slightly darker accent on hover */
+        }
+
 
     </style>
 </head>
@@ -54,22 +159,36 @@
                         Mandatory Setup
                     </h1>
 
-                    <form method="post" class="signup-form" autocomplete="off" enctype="multipart/form-data">
+                    <form method="post" class="signup-form" autocomplete="off" enctype="multipart/form-data" action="{% url 'mandatory_profile_setup' %}">
                         {% csrf_token %}
 
                         <p class="setup-instruction">
-                            You're almost done! Please provide your **Phone Number** and a **Profile Icon** to proceed to the Dashboard.
+                            You're almost done! Please complete your profile to access the community.
                         </p>
 
-                        <div class="form-group">
-                            {{ form.phone_number.label_tag }}
-                            {{ form.phone_number }}
-                        </div>
+                        {% for field in form %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {{ field }}
 
-                        <div class="form-group">
-                            {{ form.profile_icon.label_tag }}
-                            {{ form.profile_icon }}
+                                {% for error in field.errors %}
+                                    <p style="color: red; font-size: 0.9em;">{{ error }}</p>
+                                {% endfor %}
+
+                                {% if field.help_text %}
+                                    <p style="color: var(--color-placeholder); font-size: 0.8em; margin-top: 5px;">
+                                        {{ field.help_text|safe }}
+                                    </p>
+                                {% endif %}
                             </div>
+                        {% endfor %}
+                        {% if form.non_field_errors %}
+                            <div style="color: red; margin-bottom: 15px;">
+                                {% for error in form.non_field_errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
 
                         <button type="submit" class="register-btn">Complete Setup and Continue</button>
                     </form>
@@ -89,14 +208,55 @@
     <script>
         // CRITICAL: This JavaScript will warn the user if they try to close the tab or navigate away.
         window.addEventListener('beforeunload', function (e) {
-            // Check if the form has been successfully submitted (or if the user is logged out).
             // Since this page only loads when setup_complete is False, we enforce the lock.
-
-            // Modern browsers often ignore custom text, but the dialog box is enforced.
             var confirmationMessage = 'Wait! You must complete your profile setup before leaving the page. Are you sure you want to exit?';
             (e || window.event).returnValue = confirmationMessage;
             return confirmationMessage;
         });
+
+        // === NEW: College Autocomplete Logic ===
+        document.addEventListener('DOMContentLoaded', function() {
+            const collegeInput = document.getElementById('id_college_name');
+
+            // 1. Create the <datalist> element (where suggestions appear)
+            const collegeDatalist = document.createElement('datalist');
+            collegeDatalist.id = 'college-suggestions';
+
+            // Append the datalist near the input
+            collegeInput.parentNode.insertBefore(collegeDatalist, collegeInput.nextSibling);
+            collegeInput.setAttribute('list', 'college-suggestions');
+
+            let debounceTimer;
+
+            collegeInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const query = this.value.trim();
+
+                // Only search if the query is at least 3 characters long (to limit load)
+                if (query.length > 2) {
+                    // Use debounce to wait 300ms after the user stops typing
+                    debounceTimer = setTimeout(() => {
+                        const autocompleteUrl = `/college-autocomplete/?q=${encodeURIComponent(query)}`;
+
+                        fetch(autocompleteUrl)
+                            .then(response => response.json())
+                            .then(data => {
+                                // Clear old suggestions
+                                collegeDatalist.innerHTML = '';
+
+                                // Fill the datalist with the 5-6 colleges from the server
+                                data.forEach(college => {
+                                    const option = document.createElement('option');
+                                    option.value = college.name;
+                                    collegeDatalist.appendChild(option);
+                                });
+                            })
+                            .catch(error => console.error('Error fetching colleges:', error));
+                    }, 300);
+                }
+            });
+        });
+        // ======================================
     </script>
 </body>
 </html>

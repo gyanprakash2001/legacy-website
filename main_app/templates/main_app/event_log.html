@@ -4,43 +4,140 @@
 <head>
     <meta charset="UTF-8">
     <title>My Registrations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <style>
-        body {
-            background-color: #f0f2f5;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        /*
+        --------------------------------------------------
+        EVENT LOG PAGE STYLING (Monochrome Dark Theme)
+        --------------------------------------------------
+        */
+
+        :root {
+            /* MONOCHROME ACCENT CHANGE: Uses only white/gray shades */
+            --color-primary-button: #ffffff; /* White accent color (for buttons/accents) */
+            --color-up-text: #000000; /* Text on bright button (MUST be black) */
+            --color-text-dark: #f0f0f0; /* Off-white text */
+            --color-border-light: #444444; /* Darker border lines */
+            --color-secondary-bg: #292929; /* Darker input/hover background */
+            --color-placeholder: #888888; /* Gray text for details */
+            --color-left-bg: #1e1e1e; /* Floating card background */
+            --color-link: #ffffff; /* Links should now be white/light gray */
+            --color-item-bg: #292929; /* Item background, slightly lighter than card */
         }
+
+        /* 1. Global Page Background Fix */
+        body {
+            background-color: #121212 !important;
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        /* 2. Main Card Container */
         .clean-container {
             max-width: 900px;
             margin: 40px auto;
             padding: 30px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            /* CRITICAL: Apply dark card background */
+            background-color: var(--color-left-bg, #1e1e1e);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            color: var(--color-text-dark, #f0f0f0);
         }
+
+        /* 3. Header and Back Link */
         .feed-header {
-            border-bottom: 1px solid #f0f2f5;
+            display: flex; /* To align h1 and link */
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--color-border-light, #444444);
             padding-bottom: 15px;
             margin-bottom: 25px;
         }
+
         .feed-header h1 {
             font-size: 1.5rem;
             font-weight: bold;
             margin: 0;
-            color: #1c1e21;
+            color: var(--color-text-dark, #f0f0f0);
         }
+
+        .feed-header a {
+            text-decoration: none;
+            color: var(--color-link, #ffffff); /* White link */
+            font-weight: 500;
+        }
+
+        .feed-header a:hover {
+            color: var(--color-placeholder, #888888); /* Subtle gray hover */
+        }
+
+        /* 4. Event List Items */
+        .event-log-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .event-log-item {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+            /* Background for individual event items */
+            background-color: var(--color-item-bg, #292929);
+            border: 1px solid var(--color-border-light, #444444);
             border-radius: 8px;
-            margin-bottom: 15px;
             padding: 20px;
-            transition: box-shadow 0.2s;
+            transition: box-shadow 0.2s, background-color 0.2s;
         }
+
         .event-log-item:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            background-color: var(--color-tertiary-bg, #333333); /* Darker hover */
         }
+
+        .event-log-title a {
+            text-decoration: none;
+            color: var(--color-link, #ffffff); /* White link */
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .event-log-title a:hover {
+            text-decoration: underline;
+        }
+
+        .event-log-item p {
+            color: var(--color-text-dark, #f0f0f0);
+            margin: 5px 0;
+        }
+
+        .event-log-item strong {
+            color: var(--color-placeholder, #888888);
+            font-weight: normal;
+        }
+
+        /* 5. View Registrations Button (White Button) */
+        .view-registrations-btn {
+            display: inline-block;
+            background-color: var(--color-primary-button, #ffffff); /* White button */
+            color: var(--color-up-text, #000000); /* Black text */
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .view-registrations-btn:hover {
+            background-color: #dcdcdc; /* Subtle gray hover */
+        }
+
+        /* 6. No Events Message */
+        .clean-container p {
+            color: var(--color-placeholder, #888888);
+        }
+
     </style>
 </head>
 <body>
@@ -48,7 +145,7 @@
 <div class="clean-container">
     <div class="feed-header">
         <h1>My Posted Events (Registrations)</h1>
-        <a href="{% url 'dashboard' %}" style="text-decoration: none; color: #007bff; font-weight: 500;">&larr; Back to Dashboard</a>
+        <a href="{% url 'dashboard' %}" style="text-decoration: none; font-weight: 500;">&larr; Back to Dashboard</a>
     </div>
 
     <div class="event-log-list">
@@ -57,7 +154,7 @@
                 <div class="event-log-item">
 
                     <h3 class="event-log-title">
-                        <a href="{% url 'registrations_view' event.id %}" style="text-decoration: none; color: #000; font-size: 1.3em;">
+                        <a href="{% url 'registrations_view' event.id %}" style="text-decoration: none; font-size: 1.3em;">
                             {{ event.event_name }}
                         </a>
                     </h3>
@@ -74,7 +171,7 @@
                 </div>
             {% endfor %}
         {% else %}
-            <p style="padding: 20px; text-align: center; color: #65676b;">You have not posted any events yet.</p>
+            <p style="padding: 20px; text-align: center;">You have not posted any events yet.</p>
         {% endif %}
     </div>
 </div>

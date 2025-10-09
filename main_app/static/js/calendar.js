@@ -1,9 +1,7 @@
-// calendar.js (Handles all event/filter data and calendar rendering)
+// calendar.js (Handles all event/filter data and calendar rendering, including hover tooltip)
 
 let currentDate = new Date();
 window.currentEventDates = {};
-
-/// calendar.js
 
 // GLOBAL FUNCTION: Collects filter parameters from the modal
 function getFilterParams() {
@@ -134,6 +132,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     day.classList.add('event-day'); // Normal highlight
                 }
                 day.dataset.dateString = dateString;
+                // ADDED: Store event names for the tooltip
+                day.dataset.eventNames = eventsOnDay.map(e => e.name).join('; ');
             }
 
             calendarGrid.appendChild(day);
@@ -167,6 +167,65 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // === NEW: Calendar Hover (Tooltip) Functionality ===
+    let currentTooltip = null;
+
+    calendarGrid.addEventListener('mouseover', (e) => {
+        // Find the closest calendar day that has event data
+        const targetDay = e.target.closest('.event-day, .filtered-event-day');
+
+        if (targetDay && targetDay.dataset.eventNames) {
+            // 1. Clear any existing tooltip
+            if (currentTooltip) {
+                currentTooltip.remove();
+            }
+
+            // 2. Create the tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.classList.add('event-tooltip');
+
+            // Format the content as an unordered list
+            const eventNames = targetDay.dataset.eventNames.split('; ').map(name => `<li>${name}</li>`).join('');
+            tooltip.innerHTML = `<strong>Upcoming Events:</strong><ul>${eventNames}</ul>`;
+
+            // 3. Append the tooltip to the body for correct layering
+            document.body.appendChild(tooltip);
+            currentTooltip = tooltip;
+
+            // 4. Position the tooltip relative to the hovered element
+            const rect = targetDay.getBoundingClientRect();
+
+            // Position it just below the center of the hovered date
+            tooltip.style.left = `${rect.left + rect.width / 2}px`;
+            tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+
+            // Center the tooltip horizontally (relative to its own width)
+            tooltip.style.transform = 'translateX(-50%)';
+
+            // 5. Make it visible
+            tooltip.style.display = 'block';
+        }
+    });
+
+    calendarGrid.addEventListener('mouseout', (e) => {
+        // Find the calendar day the mouse is leaving
+        const targetDay = e.target.closest('.calendar-day');
+
+        // Only remove the tooltip if the mouse is moving off of an event day
+        // The check against `relatedTarget` helps prevent the tooltip from flickering
+        // when moving within the calendar grid.
+        if (currentTooltip && !targetDay) {
+             // Use a slight delay to avoid flicker when hovering between elements
+            setTimeout(() => {
+                if (currentTooltip) {
+                    currentTooltip.remove();
+                    currentTooltip = null;
+                }
+            }, 100);
+        }
+    });
+    // ===================================================
 
     // Daily Event Modal Close
     document.querySelector('.close-daily-modal-btn').addEventListener('click', () => {

@@ -8,16 +8,25 @@ from django.dispatch import receiver
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     college_name = models.CharField(max_length=500)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+
+    # CRITICAL: This default=False is what enforces the mandatory setup.
+    setup_complete = models.BooleanField(default=False)
+
     profile_icon = models.ImageField(
         upload_to='profile_icons/',
         default='default_icon.png',
-        null=True,     # Keep this so we can clear the record
+        null=True,
         blank=True
     )
-    # ... rest of the model
 
     def __str__(self):
         return self.user.username
+
+
+# --- (Other models like Post, Event, EventApplicationDetails, etc. go here) ---
+
+
 
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -105,3 +114,31 @@ class EventType(models.Model):
 
     def __str__(self):
         return f"{self.category.name} - {self.name}"
+
+
+
+# ----------------------------------------------------------------------
+# ✅ CORRECTED SIGNAL HANDLERS FOR PROFILE CREATION/ENFORCEMENT
+# ----------------------------------------------------------------------
+
+@receiver(post_save, sender=User)
+def manage_user_profile(sender, instance, created, **kwargs):
+    """
+    Handles user profile creation on user creation and saves on user updates.
+    """
+    if created:
+        # CRITICAL FIX 1: Explicitly pass a default for the required field
+        # 'college_name' to prevent database errors.
+        UserProfile.objects.create(
+            user=instance,
+            college_name="Not Set (Mandatory Setup)", # Use a clear default
+            setup_complete=False
+        )
+    else:
+        # CRITICAL FIX 2: Check if the profile exists BEFORE trying to save it.
+        # This prevents the UNIQUE constraint error.
+        try:
+            instance.userprofile.save()
+        except UserProfile.DoesNotExist:
+            # This path should ideally never be hit, but acts as a safeguard.
+            pass

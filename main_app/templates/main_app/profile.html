@@ -1,78 +1,285 @@
-{% extends "main_app/base.html" %} 
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Profile - LEGACY</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-{% block title %}My Profile - LEGACY{% endblock %}
+    <style>
+        /*
+        --------------------------------------------------
+        PROFILE PAGE STYLING (Monochrome Dark Theme)
+        --------------------------------------------------
+        */
 
-{% block content %}
-<div class="profile-container">
-    <div class="profile-card">
-        <h1>My Profile</h1>
+        :root {
+            /* MONOCHROME ACCENT CHANGE: Uses only white/gray shades */
+            --color-primary-button: #ffffff; /* White accent color */
+            --color-up-text: #000000; /* Text on bright button (MUST be black) */
+            --color-text-dark: #f0f0f0; /* Off-white text */
+            --color-border-light: #444444; /* Darker border lines */
+            --color-secondary-bg: #292929; /* Darker input background */
+            --color-placeholder: #888888; /* Gray text for details */
+            --color-left-bg: #1e1e1e; /* Floating card background */
+            --color-link: #ffffff; /* Links/accents should now be white */
+        }
 
-        <div class="profile-header-summary">
-            {% if current_user_profile.profile_icon %}
-                <img src="{{ current_user_profile.profile_icon.url }}" alt="{{ request.user.username }}'s Profile Icon" class="large-profile-icon">
-            {% else %}
-                <img src="{% static 'images/placeholder.png' %}" alt="Placeholder Icon" class="large-profile-icon">
-            {% endif %}
-            <h2>{{ request.user.username }}</h2>
-            <p class="email-detail"><i class="fa-solid fa-envelope"></i> {{ request.user.email }}</p>
-            <p class="college-detail"><i class="fa-solid fa-graduation-cap"></i> {{ current_user_profile.college_name }}</p>
-            <p class="member-since">Member since: {{ request.user.date_joined|date:"M d, Y" }}</p>
-        </div>
-        
-        <div class="profile-edit-section">
-            <h3>Update Details</h3>
-            
-            {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+        /* 1. Global Page Background Fix */
+        body {
+            background-color: #121212 !important;
+            font-family: 'Times New Roman', Times, serif;
+        }
 
-            <form method="post" enctype="multipart/form-data" class="profile-update-form">
-                {% csrf_token %}
+        /* 2. Container and Card */
+        .profile-container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #121212; /* Ensure container background matches the body */
+        }
 
-                <fieldset>
-                    <legend>Core Account Info</legend>
-                    {% for field in user_form %}
-                        <div class="form-group">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% for error in field.errors %}
-                                <span class="error-message">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-                </fieldset>
+        .profile-card {
+            background-color: var(--color-left-bg, #1e1e1e);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            margin-bottom: 20px;
+            color: var(--color-text-dark, #f0f0f0);
+            font-family: 'Times New Roman', Times, serif;
+        }
 
-                <fieldset>
-                    <legend>Profile Details</legend>
-                    {% for field in profile_form %}
-                        <div class="form-group">
-                            {{ field.label_tag }}
-                            {% if field.name == 'profile_icon' %}
-                                {% if current_user_profile.profile_icon %}
-                                    <p class="current-file">Current: <img src="{{ current_user_profile.profile_icon.url }}" alt="Icon" style="width: 50px; height: 50px; border-radius: 50%;"></p>
+        .profile-card h1 {
+            font-size: 1.8em;
+            color: var(--color-text-dark, #f0f0f0);
+            border-bottom: 2px solid var(--color-border-light, #444444);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 3. Profile Summary Section */
+        .profile-header-summary {
+            text-align: center;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed var(--color-border-light, #444444);
+        }
+
+        .large-profile-icon {
+            /* Accent color border is now White */
+            border: 3px solid var(--color-primary-button, #ffffff);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .profile-header-summary h2 {
+            font-size: 1.5em;
+            color: var(--color-text-dark, #f0f0f0);
+            margin-bottom: 5px;
+        }
+
+        .email-detail, .college-detail, .member-since {
+            color: var(--color-placeholder, #888888);
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        /* Icons (Email/College) are now White */
+        .fa-envelope, .fa-graduation-cap {
+            margin-right: 8px;
+            color: var(--color-link, #ffffff);
+        }
+
+        /* 4. Form Editing Section */
+        .profile-edit-section h3 {
+            font-size: 1.4em;
+            color: var(--color-text-dark, #f0f0f0);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .profile-update-form fieldset {
+            border: 1px solid var(--color-border-light, #444444);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Legend is now White */
+        .profile-update-form legend {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--color-link, #ffffff);
+            padding: 0 10px;
+        }
+
+        /* 5. Form Fields */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: var(--color-secondary-bg, #292929);
+            color: var(--color-text-dark, #f0f0f0);
+            border: 1px solid var(--color-border-light, #444444);
+        }
+
+        /* Input Focus State (Uses a soft white glow) */
+        .form-group input:focus {
+            border-color: var(--color-primary-button, #ffffff);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+            outline: none;
+        }
+
+
+        /* Fix current file text color */
+        .current-file {
+            font-size: 0.9em;
+            color: var(--color-placeholder, #888888);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-message {
+            color: #FF5252;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        /* 6. Save Button (White Button with Black Text) */
+        .primary-btn {
+            background-color: var(--color-primary-button, #ffffff);
+            color: var(--color-up-text, #000000); /* Black text on white button */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .primary-btn:hover {
+            background-color: #dcdcdc; /* Slightly darker white/light gray on hover */
+        }
+
+        /* 7. Message Styling */
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .messages li {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        /* Reusing dark success colors */
+        .messages .success {
+            background-color: #38703E;
+            color: var(--color-text-dark, #f0f0f0);
+            border: 1px solid #4CAF50;
+        }
+
+        .messages .error {
+            background-color: #703838;
+            color: var(--color-text-dark, #f0f0f0);
+            border: 1px solid #FF5252;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-card">
+            <h1>My Profile</h1>
+
+            <div class="profile-header-summary">
+                {% if current_user_profile.profile_icon %}
+                    <img src="{{ current_user_profile.profile_icon.url }}" alt="{{ request.user.username }}'s Profile Icon" class="large-profile-icon">
+                {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" alt="Placeholder Icon" class="large-profile-icon">
+                {% endif %}
+                <h2>{{ request.user.first_name }} {{ request.user.last_name }}</h2>
+                <p class="email-detail"><i class="fa-solid fa-envelope"></i> {{ request.user.email }}</p>
+                <p class="college-detail"><i class="fa-solid fa-graduation-cap"></i> {{ current_user_profile.college_name }}</p>
+                <p class="member-since">Member since: {{ request.user.date_joined|date:"M d, Y" }}</p>
+            </div>
+
+            <div class="profile-edit-section">
+                <h3>Update Details</h3>
+
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" class="profile-update-form">
+                    {% csrf_token %}
+
+                    <fieldset>
+                        <legend>Core Account Info</legend>
+                        {% for field in user_form %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Profile Details</legend>
+                        {% for field in profile_form %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {% if field.name == 'profile_icon' %}
+                                    {% if current_user_profile.profile_icon %}
+                                        <p class="current-file">Current: <img src="{{ current_user_profile.profile_icon.url }}" alt="Icon" style="width: 50px; height: 50px; border-radius: 50%;"></p>
+                                    {% else %}
+                                        <p class="current-file">Current: No Image Uploaded</p>
+                                    {% endif %}
+                                    <label for="{{ field.id_for_label }}">Change Icon:</label>
+                                    {{ field }}
                                 {% else %}
-                                    <p class="current-file">Current: No Image Uploaded</p>
+                                    {{ field }}
                                 {% endif %}
-                                <label for="{{ field.id_for_label }}">Change Icon:</label>
-                                {{ field }}
-                            {% else %}
-                                {{ field }}
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <span class="error-message">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-                </fieldset>
+                                {% for error in field.errors %}
+                                    <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </fieldset>
 
-                <button type="submit" class="primary-btn">Save Changes</button>
-            </form>
+                    <button type="submit" class="primary-btn">Save Changes</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-{% endblock content %}
+</body>
+</html>

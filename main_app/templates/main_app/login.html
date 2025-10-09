@@ -5,8 +5,159 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <style>
+        /* General Page Container */
+        .login-page {
+            /* CRITICAL FIX: Ensure full width and height background */
+            width: 100%;
+            min-height: 100vh;
+            /* The gradient should cover the entire fixed container */
+            background: linear-gradient(to right, var(--color-left-bg) 70%, var(--color-right-bg) 30%);
+
+            /* The rest of the centering styles */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header {
+            position: fixed;
+            top: 25px;
+            left: 60px;
+            z-index: 20;
+        }
+
+        .logo {
+            font-weight: 1000;
+            font-size: 1.4rem;
+            color: var(--color-logo-text); /* White */
+        }
+
+        /* Layout (Columns) */
+        .columns {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            width: 80%; /* Control overall width */
+            max-width: 1000px;
+        }
+
+        .left-pane, .right-pane {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 10px 0 0;
+            height: auto;
+        }
+
+        .left-pane {
+            align-items: flex-end;
+        }
+
+        .right-pane {
+            align-items: center;
+            /* INCREASE PADDING on the right side to push image away from the center */
+            padding: 0 0 0 50px; /* <--- CHANGED: Increased left padding of right pane */
+        }
+
+        /* Title Style */
+        .login-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 3rem;
+            letter-spacing: 5px;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            color: var(--color-text-dark); /* White */
+            text-shadow: 1.2px 1.2px 0 #000000;
+        }
+
+        /* Form Card */
+        .login-form {
+            width: 320px;
+            padding: 28px 24px;
+            background: var(--color-card-background); /* Dark background */
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.09);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-sizing: border-box;
+        }
+
+        /* Form Inputs and Labels */
+        .login-form label {
+            color: var(--color-text-dark); /* White text for labels */
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .login-form input[type='text'], .login-form input[type='password'] {
+            background: var(--color-input-background); /* Darker input field */
+            color: var(--color-text-dark); /* White text inside input */
+            border: 2px solid var(--color-border-light); /* Dark gray border */
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 1.1rem;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* Log In Button (FIXED) */
+        .login-btn {
+            background: var(--color-card-background); /* Dark background */
+            color: var(--color-text-dark); /* White text */
+            border: 2px solid var(--color-border-light); /* Dark gray border */
+
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 18px;
+            padding: 12px 0;
+            margin-top: 20px;
+            cursor: pointer;
+
+            box-shadow: none;
+            transition: background 0.2s, border-color 0.2s;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .login-btn:hover {
+            background: #333333; /* Dark gray hover */
+            border-color: var(--color-primary-button); /* Accent border on hover */
+        }
+
+        /* Image Card (for consistency) */
+        .login-image-card {
+            width: 320px;
+            height: 410px;
+            background: var(--color-card-background);
+            border-radius: 0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.17);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-image-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+    </style>
 </head>
 <body>
     <div class="login-page">
@@ -21,10 +172,14 @@
                     </h1>
                     <form method="post" class="login-form">
                         {% csrf_token %}
-                        {{ form.username.label_tag }}
-                        {{ form.username }}
-                        {{ form.password.label_tag }}
-                        {{ form.password }}
+                        <div class="form-group">
+                            <label for="{{ form.username.id_for_label }}">Email address:</label>
+                            {{ form.username }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password.label_tag }}
+                            {{ form.password }}
+                        </div>
                         <button type="submit" class="login-btn">Log In</button>
                     </form>
                 </div>

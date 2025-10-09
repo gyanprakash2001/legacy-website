@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.forms import ClearableFileInput
 from django.core.exceptions import ValidationError
-
+from django.db.models import Q
 from .models import UserProfile, Post, Event, EventApplicationDetails, College
 
 
@@ -17,52 +17,45 @@ class MultiFileInput(ClearableFileInput):
 # main_app/forms.py
 
 class UserRegistrationForm(forms.ModelForm):
-    # No changes to the fields visible to the user: email, password, name
-
     # Password confirmation field
     password_confirm = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        # Fields: email, password, first_name, last_name
+        # CRITICAL CHANGE 1: REMOVE 'username' from fields.
+        # Django will now only validate email, password, first_name, and last_name.
         fields = ['email', 'password', 'first_name', 'last_name']
         widgets = {
             'password': forms.PasswordInput(),
         }
 
-    # ... (Keep the clean_email, clean_password_confirm, and save methods as they are correct)
-
-    # --- NEW: Method to enforce email as username ---
     def clean_email(self):
         email = self.cleaned_data['email']
 
-        # Check if email is already taken (Django's default check still runs, but this is a good custom safeguard)
-        if User.objects.filter(username=email).exists():
+        # --- ROBUST CHECK (Keep this) ---
+        # Checks if email is used as EITHER username (old/social) OR email (new)
+        # This is correct for checking uniqueness against existing records.
+        if User.objects.filter(Q(username__iexact=email) | Q(email__iexact=email)).exists():
             raise ValidationError("A user with that email already exists.")
 
-        # Crucially, set the username field to the email address
-        self.cleaned_data['username'] = email
+        # CRITICAL CHANGE 2: Remove manual assignment of 'username' here.
+        # It is handled more reliably in the save() method or in the view.
+        # Removing this line: self.cleaned_data['username'] = email
+
         return email
 
-    def clean_password_confirm(self):
-        password = self.cleaned_data.get('password')
-        password_confirm = self.cleaned_data.get('password_confirm')
-        if password and password_confirm and password != password_confirm:
-            raise ValidationError("Passwords do not match.")
-        return password_confirm
+    # ... (rest of the form remains the same) ...
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password"])
 
-        # Ensure username is set to email before saving (redundant but safe)
-        if 'username' in self.cleaned_data:
-            user.username = self.cleaned_data['username']
+        # CHANGE 3: Keep this logic to ensure username is set to email before saving
+        user.username = self.cleaned_data['email']  # Use the cleaned email directly
 
         if commit:
             user.save()
         return user
-
 
 class PostForm(forms.ModelForm):
     media_files = forms.FileField(widget=MultiFileInput(), required=False)
@@ -133,28 +126,34 @@ class EventApplicationForm(forms.ModelForm):
 # --- ADD THESE TWO CLASSES TO THE END OF main_app/forms.py ---
 
 class UserUpdateForm(forms.ModelForm):
-    """Form for updating core Django User details (username, email)."""
-    email = forms.EmailField()
+    """Form for updating core Django User details (name and email)."""
+    email = forms.EmailField(label='Email') # Keep email as an editable field
+
+    # CRITICAL: We explicitly add name fields to the form
+    first_name = forms.CharField(max_length=150, required=True, label='First Name')
+    last_name = forms.CharField(max_length=150, required=True, label='Last Name')
 
     class Meta:
         model = User
-        fields = ['username', 'email']
+        # CRITICAL: Remove 'username'
+        fields = ['first_name', 'last_name', 'email'] # Username is now implicitly the email
 
 
 class UserProfileUpdateForm(forms.ModelForm):
     """Form for updating custom UserProfile details."""
 
-    # Using CharField for college_name as it's a simple text field in UserProfile model
     college_name = forms.CharField(max_length=255, required=False,
                                    widget=forms.TextInput(attrs={'placeholder': 'Your college name'}))
 
-    # We use FileField for the profile icon since you used it in UserRegistrationForm
     profile_icon = forms.FileField(label='Profile Icon', required=False)
+
+    # CRITICAL: Add the phone number field from the UserProfile model
+    phone_number = forms.CharField(max_length=15, required=False, label='Mobile Number')
 
     class Meta:
         model = UserProfile
-        # We only allow changing college_name and profile_icon
-        fields = ['college_name', 'profile_icon']
+        # Add 'phone_number' to the fields list
+        fields = ['college_name', 'phone_number', 'profile_icon']
 
 
 # main_app/forms.py
@@ -162,35 +161,53 @@ class UserProfileUpdateForm(forms.ModelForm):
 # ... (ensure User is imported: from django.contrib.auth.models import User)
 
 class MandatoryProfileForm(forms.ModelForm):
-    """Form for collecting mandatory phone number, college name, and optional profile icon."""
+    """Form for collecting mandatory profile data using AJAX autocomplete for college."""
 
     # NEW: Add First Name and Last Name fields for users (especially social) who might not have set them
     first_name = forms.CharField(max_length=150, required=True, label='First Name')
     last_name = forms.CharField(max_length=150, required=True, label='Last Name')
 
-    # College Name remains mandatory (ModelChoiceField confirmed in Step 2 of previous convo)
-    college_name = forms.ModelChoiceField(
-        queryset=College.objects.all().order_by('name'),
-        to_field_name='name',
-        label='College Name',
-        required=True  # Mandatory
-    )
+    # CRITICAL CHANGE: Change College Name to a simple CharField for AJAX input
+    # We will validate it in the clean method.
+    college_name = forms.CharField(max_length=500, required=True, label='College Name')
 
     # Phone number remains mandatory
     phone_number = forms.CharField(max_length=15, required=True, label='Mobile Number')
 
     # Profile Icon is now OPTIONAL
-    profile_icon = forms.FileField(label='Profile Icon (Optional)', required=False)  # <--- MADE OPTIONAL
+    profile_icon = forms.FileField(label='Profile Icon (Optional)', required=False)
 
     class Meta:
         model = UserProfile
-        # Only use fields from UserProfile model
-        fields = ('college_name', 'phone_number', 'profile_icon')
+        # We only use fields from UserProfile model that are NOT overridden above
+        fields = ('phone_number', 'profile_icon')
 
-        # --- NEW: Custom __init__ and save methods to handle User fields (first_name/last_name) ---
+    # --- New Cleaning Method for College Name ---
+    def clean_college_name(self):
+        """
+        Validates that the college name entered by the user actually exists
+        in the database after the AJAX search helps them find it.
+        """
+        college_name = self.cleaned_data.get('college_name')
+
+        if not college_name:
+            # Should be caught by required=True, but safe to check
+            raise ValidationError("College Name is required.")
+
+        try:
+            # Look up the college name (case-insensitive)
+            college = College.objects.get(name__iexact=college_name)
+            # Store the college object for use in the save method
+            self._selected_college = college
+        except College.DoesNotExist:
+            raise ValidationError("Please select a valid college name from the suggestions.")
+
+        return college_name
+
+    # --- End New Cleaning Method ---
 
     def __init__(self, *args, **kwargs):
-        # 1. Pop the User instance (if available) before calling super()
+        # 1. Pop the User instance (if available)
         user_instance = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
@@ -199,8 +216,13 @@ class MandatoryProfileForm(forms.ModelForm):
             self.fields['first_name'].initial = user_instance.first_name
             self.fields['last_name'].initial = user_instance.last_name
 
-        # 3. Add the User model fields (first_name, last_name) to the form's fields list (non-model fields)
-        # Note: We manually add them here since they are not part of UserProfile.Meta.fields
+        # CRITICAL: Add the HTML 'list' attribute for the datalist hook
+        self.fields['college_name'].widget.attrs.update({
+            'placeholder': 'Start typing your college name...',
+            'list': 'college-suggestions',  # Hook for the JavaScript datalist
+            'autocomplete': 'off',
+            'id': 'id_college_name'  # Ensure a consistent ID for JS targeting
+        })
 
     def save(self, commit=True):
         profile = super().save(commit=False)
@@ -210,6 +232,10 @@ class MandatoryProfileForm(forms.ModelForm):
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.save()  # Save the User model updates
+
+        # CRITICAL: Update the UserProfile's college_name field from the validated object
+        if hasattr(self, '_selected_college'):
+            profile.college_name = self._selected_college.name
 
         if commit:
             profile.save()  # Save the UserProfile model updates

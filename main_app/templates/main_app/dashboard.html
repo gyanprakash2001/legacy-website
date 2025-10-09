@@ -6,59 +6,10 @@
     <title>Dashboard - LEGACY</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-    {% if show_setup_modal %}
-    <style>
-        /* CSS to ensure the dashboard content is blurred and locked */
-        .dashboard-container {
-            transition: filter 0.3s;
-        }
-        .blurry-content {
-            filter: blur(5px);
-            pointer-events: none; /* Disables interaction on blurred content */
-        }
-
-        /* Modal Overlay for the full screen */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000; /* High Z-index to cover all existing modals/content */
-            background-color: rgba(0, 0, 0, 0.4); /* Darkening background */
-        }
-
-        /* Modal Box Styling (similar to your registration pages) */
-        .setup-modal-content {
-        background: #e6e6fa;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        z-index: 10001;
-        max-width: 500px;
-        width: 90%;
-
-        /* --- CRITICAL FIX: Add max-height and scrolling --- */
-        max-height: 90vh; /* Limits height to 90% of the viewport height */
-        overflow-y: auto;  /* Enables vertical scrolling when content exceeds max-height */
-        /* ---------------------------------------------------- */
-
-        text-align: center;
-        pointer-events: auto;
-        }
-
-    </style>
-    {% endif %}
-
 </head>
 <body>
 
-    <div class="dashboard-container {% if show_setup_modal %}blurry-content{% endif %}">
-
+    <div class="dashboard-container">
         <aside class="sidebar-left">
             <div class="logo">Legacy</div>
             <nav class="main-nav">
@@ -93,6 +44,7 @@
                 <a href="{% url 'my_applications' %}" class="nav-item"><i class="fa-solid fa-receipt"></i> My Applications</a>
             </nav>
 
+
             <a href="{% url 'logout' %}" class="nav-item logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
             <div class="more-nav"><i class="fa-solid fa-bars"></i> More</div>
         </aside>
@@ -112,15 +64,15 @@
                 <a href="{% url 'my_community' %}" class="header-link">My Community</a>
             {% endif %}
         </div>
-            <div class="start-post-container">
-            <img src="{% if request.user.userprofile.profile_icon %}{{ request.user.userprofile.profile_icon.url }}{% else %}{% static 'images/default_profile_icon.png' %}{% endif %}" alt="Profile Picture" class="profile-pic">
+                    <div class="start-post-container">
+                <img src="{% if request.user.userprofile.profile_icon %}{{ request.user.userprofile.profile_icon.url }}{% else %}{% static 'images/default_profile_icon.png' %}{% endif %}" alt="Profile Picture" class="profile-pic">
                 <a href="{% url 'create_post' %}" class="start-post-link">
                     <input type="text" placeholder="Share your event's memories" readonly>
                     <button type="button" class="post-button-redirect">Post</button>
                 </a>
             </div>
             <div class="posts-list">
-            {% for post in posts_list %}
+                {% for post in posts_list %}
                 <div class="post-item">
                     <div class="post-header">
                         <div class="post-user-info">
@@ -172,7 +124,7 @@
         </main>
 
         <aside class="sidebar-right">
-        <div class="section-container">
+            <div class="section-container">
                 <div class="suggested-colleges-header">
                     <h2>Suggested Colleges</h2>
                     <div class="college-search-container">
@@ -294,42 +246,6 @@
             <p class="modal-note">Click on an event to proceed to the application form.</p>
         </div>
     </div>
-
-    </div>
-
-
-    {% if show_setup_modal %}
-    <div class="modal-overlay">
-        <div class="setup-modal-content">
-            <h2 style="font-family: 'Rammetto One', cursive; margin-bottom: 20px;">Mandatory Setup</h2>
-
-            <form method="post" action="{% url 'mandatory_profile_setup' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <p class="setup-instruction">Please provide **Full Name**, **College Name**, and **Mobile Number** (Mandatory). Profile Picture is optional.</p>
-
-                <div class="form-group">{{ setup_form.first_name.label_tag }} {{ setup_form.first_name }}</div>
-                <div class="form-group">{{ setup_form.last_name.label_tag }} {{ setup_form.last_name }}</div>
-
-                <div class="form-group">{{ setup_form.college_name.label_tag }} {{ setup_form.college_name }}</div>
-                <div class="form-group">{{ setup_form.phone_number.label_tag }} {{ setup_form.phone_number }}</div>
-                <div class="form-group">{{ setup_form.profile_icon.label_tag }} {{ setup_form.profile_icon }}</div>
-
-                <button type="submit" class="register-btn">Complete Setup and Continue</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        window.addEventListener('beforeunload', function (e) {
-            var confirmationMessage = 'Wait! You must complete your profile setup before leaving the page. Are you sure you want to exit?';
-            (e || window.event).returnValue = confirmationMessage;
-            return confirmationMessage;
-        });
-    </script>
-    {% endif %}
-
-
     <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
 </body>
