@@ -142,6 +142,13 @@
         .register-btn:hover {
             background: #A9A9A9; /* Slightly darker accent on hover */
         }
+        /* Styling for the required field asterisk */
+        .required-asterisk {
+            color: #FFFFFF; /* Bright Red */
+            font-weight: bold;
+            margin-left: 3px; /* Small space after the label text */
+            font-size: 1.1em;
+        }
 
 
     </style>
@@ -168,7 +175,12 @@
 
                         {% for field in form %}
                             <div class="form-group">
-                                {{ field.label_tag }}
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                    {% if field.field.required %}
+                                        <span class="required-asterisk">*</span>
+                                    {% endif %}
+                                </label>
                                 {{ field }}
 
                                 {% for error in field.errors %}

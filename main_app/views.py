@@ -39,7 +39,13 @@ def login_view(request):
 
 
 def logout_view(request):
+    # Log the user out of the Django session
     logout(request)
+
+    # Add a success message to display on the next page (the login page)
+    messages.success(request, 'You have successfully logged out.')
+
+    # Redirect to the login page
     return redirect('login')
 
 

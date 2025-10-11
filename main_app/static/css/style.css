@@ -78,6 +78,7 @@ html, body {
 .main-nav {
     display: flex;
     flex-direction: column;
+    margin-bottom: 20px;
     gap: 10px;
 }
 
@@ -508,12 +509,12 @@ html, body {
 }
 
 .calendar-container {
-    background-color: var(--color-left-bg, #1e1e1e); /* Use dark background variable */
+    background-color: var(--color-left-bg, #1e1e1e);
     border-radius: 0;
     box-shadow: none;
     padding: 5px 1px;
-    margin-top: -2px;
-    color: var(--color-text-dark, #f0f0f0); /* White text */
+    margin-top: 1px; /* This margin is already very small */
+    color: var(--color-text-dark, #f0f0f0);
 }
 
 .calendar-container h2 {
@@ -1266,22 +1267,54 @@ body {
 
 
 /* Around Line 859: Adjust margins to pull it closer to the calendar */
+
+/* .event-filter-trigger: Container setup for alignment */
 .event-filter-trigger {
     cursor: pointer;
     user-select: none;
     font-size: 0.95rem;
     font-weight: 600;
-    padding: 10px 20px;
-    margin: 0 0 5px 0;
+
+    /* REMOVE PADDING HERE AND APPLY IT TO H2 INSTEAD */
+    padding: 0;
+
+    margin-bottom: 5px;
     border-bottom: none;
-    color: var(--color-text-dark, #f0f0f0); /* Set to white text */
+    color: var(--color-text-dark, #f0f0f0);
     transition: color 0.2s ease;
+
+    /* CRITICAL FIX 1: Use Flexbox to manage the inner H2 alignment */
+    display: flex;
+    justify-content: flex-end; /* Pushes content to the right side of the panel */
 }
 
+/* Optional: Add a visual cue when hovering */
+.event-filter-trigger:hover {
+    color: #A9A9A9;
+    margin-bottom: 5px;
+}
+
+/* .event-filter-trigger h2: Aligning and spacing the text/icon */
+.event-filter-trigger h2 {
+    /* CRITICAL FIX 2: Zero out all margins on H2 */
+    margin: 0 !important;
+    padding: 10px 15px; /* Re-introduce vertical padding and set horizontal padding */
+
+    /* Ensure the icon and text are centered vertically */
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between text and icon */
+
+    /* Since we made the h2 smaller previously */
+    font-size: 1.1rem;
+}
+
+/* --- END: CORRECTED CODE --- */
 
 /* Optional: Add a visual cue when hovering */
 .event-filter-trigger:hover {
     color: #A9A9A9; /* Change color to accent (purple) on hover */
+    margin-bottom: 5px;
 }
 
 
@@ -1399,4 +1432,81 @@ body {
 
 #apply-filters-btn:hover {
     background-color: #dcdcdc; /* Subtle gray hover */
+}
+
+/* Custom CSS to style the HR tag as a separator with vertical space */
+.nav-divider {
+    border: none; /* Removes the default line */
+    height: 1px; /* Minimal height */
+    margin: 15px 0; /* Adjust vertical space here (15px is similar to other nav items) */
+    background: transparent;
+}
+/* Optional: Add a little extra margin to the button to fine-tune spacing */
+.nav-item.logout {
+    margin-top: 5px;
+}
+
+
+
+
+
+/*logout button
+/* 1. Ensure the form wrapper doesn't break alignment */
+.logout-form {
+    /* Set display block, remove margins */
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+/* 2. Style the button to look exactly like a link item */
+.logout-btn {
+    /* Reset button appearance */
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    /* Inherit link colors and font */
+    color: var(--color-text-dark, #f0f0f0);
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: inherit;
+
+    /* Apply the standard nav-item styling for padding and flex */
+    padding: 10px 15px; /* Adjust this to match your existing nav-item padding */
+    width: 100%;
+    text-align: left;
+
+    /* Use flex to align icon and text horizontally */
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between icon and text */
+
+    transition: background-color 0.2s, color 0.2s; /* Add smooth hover transition */
+}
+
+/* 3. Match the hover state */
+.logout-btn:hover {
+    background-color: var(--color-hover-bg, #333333); /* Optional: Use a slight background hover color if your links do */
+}
+
+/* 4. Fix Filter Events Font Size (from previous request) */
+.event-filter-trigger h2 {
+    font-size: 1.1rem; /* Smaller font size */
+    margin: 10px 0;
+    padding: 0 15px;
+}
+
+
+
+
+
+/*Event Filter Trigger
+/* Reduce the font size of the H2 inside the Filter Events trigger */
+.event-filter-trigger h2 {
+    font-size: 1rem; /* Smaller font size, adjust as needed */
+    margin: 10px 35px; /* Optional: reduce top/bottom margin if necessary */
+    padding: 0 15px; /* Keep side padding for alignment */
+    /* Ensure the icon scales down with the text */
+    align-items: center;
 }

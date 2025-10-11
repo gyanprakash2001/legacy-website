@@ -15,7 +15,6 @@ class UserProfile(models.Model):
 
     profile_icon = models.ImageField(
         upload_to='profile_icons/',
-        default='default_icon.png',
         null=True,
         blank=True
     )

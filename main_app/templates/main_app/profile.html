@@ -218,7 +218,7 @@
                 {% if current_user_profile.profile_icon %}
                     <img src="{{ current_user_profile.profile_icon.url }}" alt="{{ request.user.username }}'s Profile Icon" class="large-profile-icon">
                 {% else %}
-                    <img src="{% static 'images/placeholder.png' %}" alt="Placeholder Icon" class="large-profile-icon">
+                    <img src="{% static 'images/default_icon.png' %}" alt="Placeholder Icon" class="large-profile-icon">
                 {% endif %}
                 <h2>{{ request.user.first_name }} {{ request.user.last_name }}</h2>
                 <p class="email-detail"><i class="fa-solid fa-envelope"></i> {{ request.user.email }}</p>

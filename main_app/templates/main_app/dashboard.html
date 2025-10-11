@@ -40,13 +40,20 @@
                 <div class="calendar-grid" id="calendar-grid"></div>
             </div>
 
+            <hr class="nav-divider">
             <nav class="secondary-nav">
                 <a href="{% url 'my_applications' %}" class="nav-item"><i class="fa-solid fa-receipt"></i> My Applications</a>
             </nav>
 
+            <hr class="nav-divider">
+            <div class="nav-item-wrapper">
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="nav-item logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </button>
+            </form>
 
-            <a href="{% url 'logout' %}" class="nav-item logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
-            <div class="more-nav"><i class="fa-solid fa-bars"></i> More</div>
         </aside>
 
         <main class="main-feed">
@@ -78,12 +85,20 @@
                         <div class="post-user-info">
                             <img src="{% if post.author.userprofile.profile_icon %}{{ post.author.userprofile.profile_icon.url }}{% else %}{% static 'images/default_profile_icon.png' %}{% endif %}" alt="Profile icon" class="post-profile-icon">
                             <div class="user-details">
-                                <div class="username-and-college">
-                                    <span class="username">{{ post.author.username }}</span>
-                                    <span class="college-name">{{ post.author.userprofile.college_name }}</span>
-                                </div>
-                                <span class="post-timestamp">{{ post.created_at|timesince }} ago</span>
+                            <div class="username-and-college">
+                                <span class="username">
+                                    {% with full_name=post.author.get_full_name %}
+                                        {% if full_name %}
+                                            {{ full_name }}
+                                        {% else %}
+                                            {{ post.author.username }}
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                                <span class="college-name">{{ post.author.userprofile.college_name }}</span>
                             </div>
+                            <span class="post-timestamp">{{ post.created_at|timesince }} ago</span>
+                        </div>
                         </div>
                     </div>
                     <div class="post-content">

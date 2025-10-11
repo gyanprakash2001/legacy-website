@@ -104,6 +104,13 @@
         .signup-page a:hover {
             color: var(--color-primary-button);
         }
+        /* Styling for the required field asterisk */
+        .required-asterisk {
+            color: #FFFFFF; /* Bright Red */
+            font-weight: bold;
+            margin-left: 3px; /* Small space after the label text */
+            font-size: 1.1em;
+        }
 
     </style>
 </head>
@@ -122,24 +129,24 @@
                 {% csrf_token %}
 
                 <div class="form-group">
-                    {{ form.first_name.label_tag }}
+                    <label for="{{ form.first_name.id_for_label }}">First name: <span class="required-asterisk">*</span></label>
                     {{ form.first_name }}
                 </div>
-                 <div class="form-group">
-                    {{ form.last_name.label_tag }}
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}">Last name: <span class="required-asterisk">*</span></label>
                     {{ form.last_name }}
                 </div>
 
                 <div class="form-group">
-                    {{ form.email.label_tag }}
+                    <label for="{{ form.email.id_for_label }}">Email address: <span class="required-asterisk">*</span></label>
                     {{ form.email }}
                 </div>
                 <div class="form-group">
-                    {{ form.password.label_tag }}
+                    <label for="{{ form.password.id_for_label }}">Password: <span class="required-asterisk">*</span></label>
                     {{ form.password }}
                 </div>
                 <div class="form-group">
-                    {{ form.password_confirm.label_tag }}
+                    <label for="{{ form.password_confirm.id_for_label }}">Password confirmation: <span class="required-asterisk">*</span></label>
                     {{ form.password_confirm }}
                 </div>
 
