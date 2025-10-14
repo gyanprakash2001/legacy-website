@@ -1019,9 +1019,11 @@ def instagram_auth_start(request):
 
 # WARNING: Ensure the @login_required decorator is NOT used above this function.
 
+# WARNING: Ensure the @login_required decorator is NOT used above this function.
+
 def instagram_auth_callback(request):
     """
-    Receives the authorization code, exchanges it for a Long-Lived Token,
+    Receives the authorization code, exchanges it for the Long-Lived Token,
     retrieves the permanent Instagram User ID, and links the tokens to the
     currently authenticated user's profile.
     """
@@ -1044,37 +1046,39 @@ def instagram_auth_callback(request):
                 'client_id': settings.INSTAGRAM_APP_ID,
                 'client_secret': settings.INSTAGRAM_APP_SECRET,
                 'grant_type': 'authorization_code',
-                # Use the setting for the redirect_uri (CRITICAL MATCH)
+                # Uses the setting variable (ensures consistency with Meta dashboard)
                 'redirect_uri': settings.INSTAGRAM_REDIRECT_URI,
                 'code': auth_code
             }
         )
-        token_exchange_response.raise_for_status()  # Raise exception for bad status codes
+        # Raise exception for bad HTTP status codes (e.g., 400)
+        token_exchange_response.raise_for_status()
         token_data = token_exchange_response.json()
 
         short_token = token_data.get('access_token')
-        # We temporarily save the ID from this call, though the next call gives the official one
-        short_token_user_id = token_data.get('user_id')
 
         if not short_token:
             messages.error(request, f"Token exchange failed: {token_data.get('error_message', 'Unknown error.')}")
             return redirect('dashboard')
 
     except requests.exceptions.RequestException as e:
-        messages.error(f"API Connection Error (Short Token Exchange): {e}")
+        messages.error(request, f"API Connection Error (Short Token Exchange): {e}")
         return redirect('dashboard')
     except Exception as e:
-        messages.error(f"API Response Error (Short Token): {e}")
+        messages.error(request, f"API Response Error (Short Token): {e}")
         return redirect('dashboard')
 
-    # --- API Call 2: Exchange Short-Lived Token for Long-Lived Token ---
+    # --- API Call 2: Exchange Short-Lived Token for Long-Lived Token (FIXED ENDPOINT) ---
     try:
         long_token_response = requests.get(
-            'https://graph.instagram.com/access_token',
+            # FIX: Use the FB Graph endpoint for Long-Lived Token exchange
+            'https://graph.facebook.com/oauth/access_token',
             params={
-                'grant_type': 'ig_exchange_token',
+                # FIX: Use fb_exchange_token grant type
+                'grant_type': 'fb_exchange_token',
                 'client_secret': settings.INSTAGRAM_APP_SECRET,
-                'access_token': short_token
+                # FIX: Use the correct parameter name for the token
+                'fb_exchange_token': short_token
             }
         )
         long_token_response.raise_for_status()
@@ -1087,46 +1091,47 @@ def instagram_auth_callback(request):
             return redirect('dashboard')
 
     except requests.exceptions.RequestException as e:
-        messages.error(f"API Connection Error (Long Token Exchange): {e}")
+        messages.error(request, f"API Connection Error (Long Token Exchange): {e}")
         return redirect('dashboard')
     except Exception as e:
-        messages.error(f"API Response Error (Long Token): {e}")
+        messages.error(request, f"API Response Error (Long Token): {e}")
         return redirect('dashboard')
 
     # --- API Call 3: Get Permanent Instagram User ID (FIX FOR BLANK ID) ---
     try:
-        # Use the long-lived token to query the Graph API's 'me' endpoint
+        # FIX: Use the FB Graph endpoint to fetch the linked Instagram business account details
         user_id_response = requests.get(
-            f'https://graph.instagram.com/me',
+            'https://graph.facebook.com/me',
             params={
-                'fields': 'id,username',  # Request the ID and username
+                # FIX: Request the nested instagram_business_account object
+                'fields': 'id,username,instagram_business_account',
                 'access_token': long_token
             }
         )
         user_id_response.raise_for_status()
         user_id_data = user_id_response.json()
 
-        # This is the correct, permanent Instagram-scoped User ID
-        permanent_instagram_user_id = user_id_data.get('id')
+        # CRITICAL FIX: Extract the ID from the nested object
+        permanent_instagram_user_id = user_id_data.get('instagram_business_account', {}).get('id')
 
         if not permanent_instagram_user_id:
-            messages.error(request, "Failed to retrieve permanent Instagram User ID.")
+            messages.error(request,
+                           "Failed to retrieve permanent Instagram User ID. Please ensure your IG account is linked to a Facebook Page and is a Business/Creator account.")
             return redirect('dashboard')
 
     except requests.exceptions.RequestException as e:
-        messages.error(f"API Connection Error (User ID Fetch): {e}")
+        messages.error(request, f"API Connection Error (User ID Fetch): {e}")
         return redirect('dashboard')
     except Exception as e:
-        messages.error(f"API Response Error (User ID Fetch): {e}")
+        messages.error(request, f"API Response Error (User ID Fetch): {e}")
         return redirect('dashboard')
 
     # --- 4. Link and Save to CURRENTLY LOGGED-IN USER ---
     try:
-        # Save the tokens and the permanent user ID
         user_profile = request.user.userprofile
 
         user_profile.instagram_access_token = long_token
-        user_profile.instagram_user_id = permanent_instagram_user_id  # FINAL CORRECT ID
+        user_profile.instagram_user_id = permanent_instagram_user_id  # Saves the now-correct ID
         user_profile.save()
 
         messages.success(request, "Success! Your Instagram Account is now linked and ready to fetch data! 🥳")
