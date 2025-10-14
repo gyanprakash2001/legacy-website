@@ -20,7 +20,14 @@ from .models import Event
 from .decorators import profile_setup_required
 from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
+import json
 from django.conf import settings
+from .models import Post, MediaFile # Ensure these are imported from .models
+
+
+
+
+
 
 
 
@@ -887,6 +894,8 @@ def event_detail_view(request, event_link_key):
 
 
 
+
+
 @csrf_exempt  # This is essential to allow external POST requests from Meta
 def instagram_webhook(request):
     # --- 1. HANDLE WEBHOOK VERIFICATION (GET REQUEST) ---
@@ -909,38 +918,73 @@ def instagram_webhook(request):
             # Decode the incoming JSON payload
             data = json.loads(request.body.decode('utf-8'))
 
-            # --- Logging/Debugging (Optional but Recommended) ---
-            # In a real setup, you would use a Django logging system here.
-            # print(f"WEBHOOK RECEIVED: {data}")
+            # 1. Get the Admin User and Token (The key to the kingdom)
+            # IMPORTANT: We assume the notification relates to the admin/tester user 'Legacy'
+            try:
+                # Retrieve the admin user whose profile holds the long-lived token
+                admin_user = User.objects.get(username='Legacy')
+                access_token = admin_user.userprofile.instagram_access_token
+            except (User.DoesNotExist, UserProfile.DoesNotExist):
+                # If the user or token is missing, cannot process the webhook
+                return HttpResponse('Admin user or token missing.', status=403)
 
-            # --- Data Processing Logic Placeholder ---
-            # Loop through the notification entries
+            if not access_token:
+                return HttpResponse('No access token found.', status=403)
+
+            # 2. Loop through entries and check for 'media' changes
             for entry in data.get('entry', []):
                 for change in entry.get('changes', []):
-                    # Check if the notification is about a new media/post upload
+                    # Check if the notification is about new media/post
                     if change.get('field') == 'media':
-                        # IMPORTANT: When the 'media' field is available and subscribed:
-                        # 1. Extract the user ID and media ID from the 'value' dictionary.
-                        # 2. Use the stored Access Token to make a GET request to the Graph API
-                        #    to fetch the full post data (caption, media_url).
-                        # 3. Create a new Post object in your database using this fetched data.
 
-                        # Placeholder Action: Log that a content change was detected
-                        print(f"NEW CONTENT DETECTED from User: {change.get('value', {}).get('user_id')}")
+                        media_id = change.get('value', {}).get('media_id')
+
+                        if media_id:
+                            # --- 3. Make the API Call to Fetch FULL Post Data ---
+
+                            # Fields to fetch: caption, media_url, media_type, permalink, timestamp
+                            fields = 'caption,media_url,media_type,permalink,timestamp'
+
+                            api_url = f'https://graph.facebook.com/v19.0/{media_id}'
+
+                            response = requests.get(
+                                api_url,
+                                params={'fields': fields, 'access_token': access_token}
+                            )
+
+                            post_data = response.json()
+
+                            # --- 4. Create Post in Django DB ---
+                            if post_data.get('id'):
+
+                                # Use media_id as the content source for unique identification
+                                post = Post.objects.create(
+                                    author=admin_user,
+                                    content=post_data.get('caption', 'New post from Instagram.'),
+                                    source_link=post_data.get('permalink', ''),
+                                )
+
+                                # --- 5. Save the Media File to Cloudinary/Filesystem ---
+                                media_url = post_data.get('media_url')
+                                media_type = post_data.get('media_type', 'IMAGE')
+
+                                if media_url:
+                                    is_video = (media_type == 'VIDEO' or media_type == 'REELS')
+                                    # NOTE: The save_media_from_url helper function must be defined
+                                    # at the top of your views.py file for this line to work.
+                                    # It handles downloading the image/video and saving it to your MediaFile model.
+                                    save_media_from_url(post, media_url, is_video=is_video)
 
             # Meta requires a 200 status code response to confirm receipt.
             return HttpResponse('EVENT_RECEIVED', status=200)
 
         except json.JSONDecodeError:
-            # Return 400 if the body is not valid JSON
             return HttpResponse('Invalid JSON format', status=400)
 
         except Exception as e:
-            # General error handling
-            # print(f"WEBHOOK PROCESSING ERROR: {e}")
+            # Log general processing errors
+            print(f"WEBHOOK PROCESSING ERROR: {e}")
             return HttpResponse(status=500)
 
     # Return 405 Method Not Allowed for any other method
     return HttpResponse(status=405)
-
-
