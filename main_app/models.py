@@ -9,7 +9,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     college_name = models.CharField(max_length=500)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-
+    instagram_access_token = models.CharField(max_length=255, blank=True, null=True)
     # CRITICAL: This default=False is what enforces the mandatory setup.
     setup_complete = models.BooleanField(default=False)
 
