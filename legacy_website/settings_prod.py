@@ -115,3 +115,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = '/login/'
+
+
+
+INSTAGRAM_VERIFY_TOKEN = 'Gyan2025SecretToken'

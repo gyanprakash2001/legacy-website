@@ -8,6 +8,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main_app.urls')),
+    path('webhooks/instagram/', views.instagram_webhook, name='instagram_webhook'),
 ]
 
 # CRITICAL: The following lines are ONLY for local development with DEBUG=True.

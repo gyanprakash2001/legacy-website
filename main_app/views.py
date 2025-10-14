@@ -4,7 +4,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.utils import timezone
 from django.contrib import messages
-from django.http import Http404
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -19,6 +18,10 @@ from .forms import MandatoryProfileForm
 from .models import UserProfile, College
 from .models import Event
 from .decorators import profile_setup_required
+from django.http import HttpResponse, Http404
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+
 
 
 def index(request):
@@ -880,5 +883,35 @@ def event_detail_view(request, event_link_key):
 
     # You will need to create the 'main_app/event_detail.html' template
     return render(request, 'main_app/event_detail.html', context)
+
+
+
+
+
+
+
+
+@csrf_exempt # Required since Meta sends the request, not a browser form
+def instagram_webhook(request):
+    if request.method == 'GET':
+        # This is the verification request from Meta
+        mode = request.GET.get('hub.mode')
+        token = request.GET.get('hub.verify_token')
+        challenge = request.GET.get('hub.challenge')
+
+        # Check the mode and the token against your stored secret
+        if mode == 'subscribe' and token == settings.INSTAGRAM_VERIFY_TOKEN:
+            # Success: Send back the challenge string
+            return HttpResponse(challenge)
+        else:
+            # Failure: Token mismatch
+            raise Http404("Token mismatch or invalid request mode.")
+
+    if request.method == 'POST':
+        # This is where actual data notifications (new posts) would be handled
+        # You would process the JSON payload here and create a Post in your DB.
+        return HttpResponse('EVENT_RECEIVED', status=200)
+
+    return HttpResponse(status=405) # Method Not Allowed
 
 
