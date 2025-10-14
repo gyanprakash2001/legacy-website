@@ -195,3 +195,15 @@ LOGIN_URL = '/login/'
 INSTAGRAM_VERIFY_TOKEN = 'Gyan2025SecretToken'
 
 # TEMP DEBUG: Forcing Render to clear Python runtime cache
+
+
+# === INSTAGRAM INTEGRATION SETTINGS ===
+
+# [1] Your Meta App ID (from Settings -> Basic)
+INSTAGRAM_APP_ID = '692028360605970'  # Your App ID
+
+# [2] Your Meta App Secret (from Settings -> Basic - Click 'Show')
+INSTAGRAM_APP_SECRET = 'fd1bfc72abdaa0e2efc74a386525ce82' # You must paste your App Secret
+
+# [3] The EXACT Redirect URI you set in Meta Developer Dashboard
+INSTAGRAM_REDIRECT_URI = 'https://gyan.pythonanywhere.com/auth/instagram/callback/'
