@@ -1017,17 +1017,20 @@ def instagram_auth_start(request):
 
 # WARNING: The @login_required decorator must be REMOVED from this function.
 
+# WARNING: Ensure the @login_required decorator is NOT used above this function.
+
 def instagram_auth_callback(request):
     """
     Receives the authorization code, exchanges it for a Long-Lived Token,
-    and links the token to the currently authenticated user's profile.
+    retrieves the permanent Instagram User ID, and links the tokens to the
+    currently authenticated user's profile.
     """
     if not request.user.is_authenticated:
         # Safety check: Redirect if the user is NOT logged in.
         messages.error(request, "Please log in first to link your Instagram account.")
         return redirect('login')
 
-        # 1. Capture the authorization code
+    # 1. Capture the authorization code
     auth_code = request.GET.get('code')
     if not auth_code:
         messages.error(request, "Instagram connection failed: Authorization code missing.")
@@ -1041,7 +1044,7 @@ def instagram_auth_callback(request):
                 'client_id': settings.INSTAGRAM_APP_ID,
                 'client_secret': settings.INSTAGRAM_APP_SECRET,
                 'grant_type': 'authorization_code',
-                # FIX APPLIED: Use the setting variable for consistency
+                # Use the setting for the redirect_uri (CRITICAL MATCH)
                 'redirect_uri': settings.INSTAGRAM_REDIRECT_URI,
                 'code': auth_code
             }
@@ -1050,6 +1053,7 @@ def instagram_auth_callback(request):
         token_data = token_exchange_response.json()
 
         short_token = token_data.get('access_token')
+        # We temporarily save the ID from this call, though the next call gives the official one
         short_token_user_id = token_data.get('user_id')
 
         if not short_token:
@@ -1057,10 +1061,10 @@ def instagram_auth_callback(request):
             return redirect('dashboard')
 
     except requests.exceptions.RequestException as e:
-        messages.error(request, f"API Connection Error (Short Token Exchange): {e}")
+        messages.error(f"API Connection Error (Short Token Exchange): {e}")
         return redirect('dashboard')
     except Exception as e:
-        messages.error(request, f"API Response Error (Short Token): {e}")
+        messages.error(f"API Response Error (Short Token): {e}")
         return redirect('dashboard')
 
     # --- API Call 2: Exchange Short-Lived Token for Long-Lived Token ---
@@ -1083,21 +1087,49 @@ def instagram_auth_callback(request):
             return redirect('dashboard')
 
     except requests.exceptions.RequestException as e:
-        messages.error(request, f"API Connection Error (Long Token Exchange): {e}")
+        messages.error(f"API Connection Error (Long Token Exchange): {e}")
         return redirect('dashboard')
     except Exception as e:
-        messages.error(request, f"API Response Error (Long Token): {e}")
+        messages.error(f"API Response Error (Long Token): {e}")
         return redirect('dashboard')
 
-    # --- 3. Link and Save to CURRENTLY LOGGED-IN USER ---
+    # --- API Call 3: Get Permanent Instagram User ID (FIX FOR BLANK ID) ---
     try:
+        # Use the long-lived token to query the Graph API's 'me' endpoint
+        user_id_response = requests.get(
+            f'https://graph.instagram.com/me',
+            params={
+                'fields': 'id,username',  # Request the ID and username
+                'access_token': long_token
+            }
+        )
+        user_id_response.raise_for_status()
+        user_id_data = user_id_response.json()
+
+        # This is the correct, permanent Instagram-scoped User ID
+        permanent_instagram_user_id = user_id_data.get('id')
+
+        if not permanent_instagram_user_id:
+            messages.error(request, "Failed to retrieve permanent Instagram User ID.")
+            return redirect('dashboard')
+
+    except requests.exceptions.RequestException as e:
+        messages.error(f"API Connection Error (User ID Fetch): {e}")
+        return redirect('dashboard')
+    except Exception as e:
+        messages.error(f"API Response Error (User ID Fetch): {e}")
+        return redirect('dashboard')
+
+    # --- 4. Link and Save to CURRENTLY LOGGED-IN USER ---
+    try:
+        # Save the tokens and the permanent user ID
         user_profile = request.user.userprofile
 
         user_profile.instagram_access_token = long_token
-        user_profile.instagram_user_id = short_token_user_id
+        user_profile.instagram_user_id = permanent_instagram_user_id  # FINAL CORRECT ID
         user_profile.save()
 
-        messages.success(request, "Success! Your Instagram Account is now linked.")
+        messages.success(request, "Success! Your Instagram Account is now linked and ready to fetch data! 🥳")
         return redirect('dashboard')
 
     except UserProfile.DoesNotExist:
