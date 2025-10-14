@@ -10,6 +10,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main_app.urls')),
     path('webhooks/instagram/', views.instagram_webhook, name='instagram_webhook'),
+    path('auth/instagram/connect/', views.instagram_auth_start, name='instagram_auth_start'),
+    path('auth/instagram/callback/', views.instagram_auth_callback, name='instagram_auth_callback'),
 ]
 
 # CRITICAL: The following lines are ONLY for local development with DEBUG=True.
