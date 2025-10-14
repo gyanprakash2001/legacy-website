@@ -887,31 +887,60 @@ def event_detail_view(request, event_link_key):
 
 
 
-
-
-
-
-@csrf_exempt # Required since Meta sends the request, not a browser form
+@csrf_exempt  # This is essential to allow external POST requests from Meta
 def instagram_webhook(request):
+    # --- 1. HANDLE WEBHOOK VERIFICATION (GET REQUEST) ---
     if request.method == 'GET':
-        # This is the verification request from Meta
         mode = request.GET.get('hub.mode')
         token = request.GET.get('hub.verify_token')
         challenge = request.GET.get('hub.challenge')
 
-        # Check the mode and the token against your stored secret
+        # Validate the mode and the token against your stored secret
         if mode == 'subscribe' and token == settings.INSTAGRAM_VERIFY_TOKEN:
-            # Success: Send back the challenge string
-            return HttpResponse(challenge)
+            # Success: Return the challenge string provided by Meta
+            return HttpResponse(challenge, status=200)
         else:
-            # Failure: Token mismatch
-            raise Http404("Token mismatch or invalid request mode.")
+            # Failure: If the token doesn't match, raise 404
+            return HttpResponse(status=403)  # Forbidden status for security
 
+    # --- 2. HANDLE REAL-TIME NOTIFICATIONS (POST REQUEST) ---
     if request.method == 'POST':
-        # This is where actual data notifications (new posts) would be handled
-        # You would process the JSON payload here and create a Post in your DB.
-        return HttpResponse('EVENT_RECEIVED', status=200)
+        try:
+            # Decode the incoming JSON payload
+            data = json.loads(request.body.decode('utf-8'))
 
-    return HttpResponse(status=405) # Method Not Allowed
+            # --- Logging/Debugging (Optional but Recommended) ---
+            # In a real setup, you would use a Django logging system here.
+            # print(f"WEBHOOK RECEIVED: {data}")
+
+            # --- Data Processing Logic Placeholder ---
+            # Loop through the notification entries
+            for entry in data.get('entry', []):
+                for change in entry.get('changes', []):
+                    # Check if the notification is about a new media/post upload
+                    if change.get('field') == 'media':
+                        # IMPORTANT: When the 'media' field is available and subscribed:
+                        # 1. Extract the user ID and media ID from the 'value' dictionary.
+                        # 2. Use the stored Access Token to make a GET request to the Graph API
+                        #    to fetch the full post data (caption, media_url).
+                        # 3. Create a new Post object in your database using this fetched data.
+
+                        # Placeholder Action: Log that a content change was detected
+                        print(f"NEW CONTENT DETECTED from User: {change.get('value', {}).get('user_id')}")
+
+            # Meta requires a 200 status code response to confirm receipt.
+            return HttpResponse('EVENT_RECEIVED', status=200)
+
+        except json.JSONDecodeError:
+            # Return 400 if the body is not valid JSON
+            return HttpResponse('Invalid JSON format', status=400)
+
+        except Exception as e:
+            # General error handling
+            # print(f"WEBHOOK PROCESSING ERROR: {e}")
+            return HttpResponse(status=500)
+
+    # Return 405 Method Not Allowed for any other method
+    return HttpResponse(status=405)
 
 
