@@ -206,4 +206,4 @@ INSTAGRAM_APP_ID = '692028360605970'  # Your App ID
 INSTAGRAM_APP_SECRET = 'fd1bfc72abdaa0e2efc74a386525ce82' # You must paste your App Secret
 
 # [3] The EXACT Redirect URI you set in Meta Developer Dashboard
-INSTAGRAM_REDIRECT_URI = 'https://gyan.pythonanywhere.com/auth/instagram/callback/'
+INSTAGRAM_REDIRECT_URI = 'https://gyan.pythonanywhere.com/auth/callback'
