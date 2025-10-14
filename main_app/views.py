@@ -24,7 +24,7 @@ import json
 from django.conf import settings
 from .models import Post, MediaFile # Ensure these are imported from .models
 from urllib.parse import urlencode
-
+import requests
 
 
 
@@ -1015,17 +1015,23 @@ def instagram_auth_start(request):
 
 # main_app/views.py
 
-# IMPORTANT: Ensure 'requests' and 'json' are imported at the top of the file.
+# WARNING: The @login_required decorator must be REMOVED from this function.
 
-@login_required
 def instagram_auth_callback(request):
-    """Receives the authorization code and exchanges it for a Long-Lived Token."""
+    """
+    Receives the authorization code, exchanges it for a Long-Lived Token,
+    and links the token to the currently authenticated user's profile.
+    """
+    if not request.user.is_authenticated:
+        # Safety check: Redirect if the user is NOT logged in.
+        messages.error(request, "Please log in first to link your Instagram account.")
+        return redirect('login')
 
-    # 1. Capture the authorization code from Meta's redirect
+        # 1. Capture the authorization code
     auth_code = request.GET.get('code')
     if not auth_code:
         messages.error(request, "Instagram connection failed: Authorization code missing.")
-        return redirect('profile_view') # Redirect to user's profile on failure
+        return redirect('dashboard')
 
     # --- API Call 1: Exchange Code for Short-Lived Token ---
     try:
@@ -1035,69 +1041,65 @@ def instagram_auth_callback(request):
                 'client_id': settings.INSTAGRAM_APP_ID,
                 'client_secret': settings.INSTAGRAM_APP_SECRET,
                 'grant_type': 'authorization_code',
+                # FIX APPLIED: Use the setting variable for consistency
                 'redirect_uri': settings.INSTAGRAM_REDIRECT_URI,
                 'code': auth_code
             }
         )
+        token_exchange_response.raise_for_status()  # Raise exception for bad status codes
         token_data = token_exchange_response.json()
+
         short_token = token_data.get('access_token')
+        short_token_user_id = token_data.get('user_id')
 
         if not short_token:
             messages.error(request, f"Token exchange failed: {token_data.get('error_message', 'Unknown error.')}")
-            return redirect('profile_view')
+            return redirect('dashboard')
 
+    except requests.exceptions.RequestException as e:
+        messages.error(request, f"API Connection Error (Short Token Exchange): {e}")
+        return redirect('dashboard')
     except Exception as e:
-        messages.error(request, f"API Connection Error (Short Token): {e}")
-        return redirect('profile_view')
-
+        messages.error(request, f"API Response Error (Short Token): {e}")
+        return redirect('dashboard')
 
     # --- API Call 2: Exchange Short-Lived Token for Long-Lived Token ---
     try:
         long_token_response = requests.get(
-            'https://graph.facebook.com/oauth/access_token',
+            'https://graph.instagram.com/access_token',
             params={
-                'grant_type': 'fb_exchange_token',
-                'client_id': settings.INSTAGRAM_APP_ID,
+                'grant_type': 'ig_exchange_token',
                 'client_secret': settings.INSTAGRAM_APP_SECRET,
-                'fb_exchange_token': short_token
+                'access_token': short_token
             }
         )
+        long_token_response.raise_for_status()
         long_token_data = long_token_response.json()
         long_token = long_token_data.get('access_token')
 
         if not long_token:
-            messages.error(request, f"Token exchange failed: {long_token_data.get('error', {}).get('message', 'Unknown long token error.')}")
-            return redirect('profile_view')
+            messages.error(request,
+                           f"Token exchange failed: {long_token_data.get('error', {}).get('message', 'Unknown long token error.')}")
+            return redirect('dashboard')
 
+    except requests.exceptions.RequestException as e:
+        messages.error(request, f"API Connection Error (Long Token Exchange): {e}")
+        return redirect('dashboard')
     except Exception as e:
-        messages.error(request, f"API Connection Error (Long Token): {e}")
-        return redirect('profile_view')
+        messages.error(request, f"API Response Error (Long Token): {e}")
+        return redirect('dashboard')
 
-
-    # --- API Call 3: Get Permanent Instagram User ID ---
-    # Note: This is an essential step to fetch the permanent user ID for lookup
+    # --- 3. Link and Save to CURRENTLY LOGGED-IN USER ---
     try:
-        user_id_response = requests.get(
-            f"https://graph.instagram.com/me?fields=id,username&access_token={long_token}"
-        )
-        user_id_data = user_id_response.json()
-        instagram_user_id = user_id_data.get('id')
+        user_profile = request.user.userprofile
 
-        if not instagram_user_id:
-            messages.error(request, "Failed to retrieve Instagram User ID.")
-            return redirect('profile_view')
+        user_profile.instagram_access_token = long_token
+        user_profile.instagram_user_id = short_token_user_id
+        user_profile.save()
 
-    except Exception as e:
-        messages.error(request, f"API Connection Error (User ID): {e}")
-        return redirect('profile_view')
+        messages.success(request, "Success! Your Instagram Account is now linked.")
+        return redirect('dashboard')
 
-
-    # --- 5. Database Save ---
-    # Save the tokens and ID to the current user's profile
-    user_profile = request.user.userprofile
-    user_profile.instagram_access_token = long_token
-    user_profile.instagram_user_id = instagram_user_id
-    user_profile.save()
-
-    messages.success(request, "Success! Your Instagram Creator Account is now linked for cross-posting.")
-    return redirect('dashboard')
+    except UserProfile.DoesNotExist:
+        messages.error(request, "Cannot link Instagram: User profile missing. Please contact support.")
+        return redirect('dashboard')
