@@ -1510,3 +1510,56 @@ body {
     /* Ensure the icon scales down with the text */
     align-items: center;
 }
+
+
+
+
+
+
+
+/* Ensure links are displayed nicely next to each other */
+.header-links-group {
+    display: flex;
+    gap: 15px; /* Space between links */
+    align-items: center;
+}
+
+/* Style the chat button specifically */
+.chat-button {
+    background-color: #5865f2; /* A chat-like blue/purple color (e.g., Discord) */
+    color: white !important; /* Ensure text is white */
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.chat-button:hover {
+    background-color: #4a54c9;
+}
+
+.chat-button i {
+    margin-right: 5px;
+}
+
+/* Ensure the H1 can contain inline elements correctly */
+.main-feed .feed-header h1 {
+    display: flex; /* Allows content and button to sit side-by-side */
+    align-items: center; /* Vertically centers the button with the text */
+    gap: 15px; /* Adds space between the "My Community" text and the button */
+    padding: 0;
+    margin: 0;
+}
+
+/* Maintain button style from before */
+.main-feed .feed-header h1 .chat-button {
+    /* Keep the button looking like a button, not a header link */
+    background-color: #5865f2;
+    color: white !important;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1rem; /* Adjust size if needed */
+    height: fit-content;
+}

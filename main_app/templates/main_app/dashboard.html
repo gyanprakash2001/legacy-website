@@ -58,17 +58,26 @@
         <main class="main-feed">
             <div class="feed-header">
             <h1>
-                {% if is_college_community %}  {{ page_heading }} {% elif community_page %}
+                {% if is_college_community %}  {{ page_heading }}
+                {% elif community_page %}
                     My Community
+                    {% if community_page %}
+                        <a href="{% url 'college_community_chat' %}" class="header-link chat-button">
+                            <i class="fa-solid fa-comments"></i> Community Chat
+                        </a>
+                    {% endif %}
                 {% else %}
                     <a href="{% url 'dashboard' %}">Home</a>
                 {% endif %}
             </h1>
-            {% if community_page %}
-                <a href="{% url 'dashboard' %}" class="header-link">Home</a>
-            {% else %}
-                <a href="{% url 'my_community' %}" class="header-link">My Community</a>
-            {% endif %}
+            <div class="header-links-group">
+                {% if community_page or is_college_community %}
+                    <a href="{% url 'dashboard' %}" class="header-link">Home</a>
+                {% else %}
+                    <a href="{% url 'my_community' %}" class="header-link">My Community</a>
+                {% endif %}
+
+                </div>
         </div>
                     <div class="start-post-container">
                 <img src="{% if request.user.userprofile.profile_icon %}{{ request.user.userprofile.profile_icon.url }}{% else %}{% static 'images/default_profile_icon.png' %}{% endif %}" alt="Profile Picture" class="profile-pic">

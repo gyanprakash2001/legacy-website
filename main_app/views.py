@@ -1,3 +1,4 @@
+import requests
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
@@ -10,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.db.models import Q, F  # Ensure F is imported at the top of your views.py
 from .models import Event, Post, UserProfile, MediaFile, EventApplicationDetails, Follow, College, EventCategory, \
-    EventType
+    EventType, ChatMessage
 from .forms import UserRegistrationForm, PostForm, EventCreationForm, EventApplicationForm, UserUpdateForm, UserProfileUpdateForm
 from datetime import datetime
 from django.views.decorators.http import require_POST
@@ -23,8 +24,11 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.conf import settings
 from .models import Post, MediaFile # Ensure these are imported from .models
-from urllib.parse import urlencode
-import requests
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+import re
+
+
 
 
 
@@ -995,22 +999,30 @@ def instagram_webhook(request):
 
 @login_required
 def instagram_auth_start(request):
-    """Generates the Meta authorization URL and redirects the user."""
+    import json
+    from urllib.parse import urlencode
 
-    # 1. Define the parameters required by Meta
+    # 1. JSON payload to trigger the Instagram onboarding channel
+    extras_json = json.dumps({"setup": {"channel": "IG_API_ONBOARDING"}})
+
     params = {
-        'client_id': settings.INSTAGRAM_APP_ID, # Your App ID
-        'redirect_uri': settings.INSTAGRAM_REDIRECT_URI, # Your callback URL
-        'scope': 'pages_show_list,instagram_basic,instagram_manage_content', # Permissions needed
+        'client_id': '692028360605970', # Your main Meta App ID
+        'redirect_uri': 'https://gyan.pythonanywhere.com/auth/callback/',
+
+        # CRITICAL FIX: Replaced 'instagram_manage_content' with 'instagram_content_publish'
+        'scope': 'pages_show_list,instagram_basic,instagram_content_publish',
         'response_type': 'code',
+
+        # Mandatory parameters for the Facebook Login Dialog for Business:
+        'display': 'page',
+        'extras': extras_json,
+        'auth_type': 'reauthenticate',
     }
 
-    # 2. Construct the full authorization URL
-    auth_url = f"https://api.instagram.com/oauth/authorize?{urlencode(params)}"
+    # Use the correct Facebook endpoint for Business Login:
+    auth_url = f"https://www.facebook.com/dialog/oauth?{urlencode(params)}"
 
-    # 3. Redirect the user to Meta's login page
     return redirect(auth_url)
-
 
 
 # main_app/views.py
@@ -1129,9 +1141,10 @@ def instagram_auth_callback(request):
     # --- 4. Link and Save to CURRENTLY LOGGED-IN USER ---
     try:
         user_profile = request.user.userprofile
+        fallback_user_id = permanent_instagram_user_id if permanent_instagram_user_id else token_data.get('user_id')
 
         user_profile.instagram_access_token = long_token
-        user_profile.instagram_user_id = permanent_instagram_user_id  # Saves the now-correct ID
+        user_profile.instagram_user_id = fallback_user_id  # Saves the now-correct ID
         user_profile.save()
 
         messages.success(request, "Success! Your Instagram Account is now linked and ready to fetch data! 🥳")
@@ -1140,3 +1153,185 @@ def instagram_auth_callback(request):
     except UserProfile.DoesNotExist:
         messages.error(request, "Cannot link Instagram: User profile missing. Please contact support.")
         return redirect('dashboard')
+
+
+
+def privacy_policy_view(request):
+    return render(request, 'main_app/privacy_policy.html', {})
+
+def terms_of_service_view(request):
+    return render(request, 'main_app/terms_of_service.html', {})
+
+
+# main_app/views.py (Add this new function)
+
+@login_required
+def college_community_chat_view(request):
+    """
+    Renders the community chat page for the user's college.
+    Fetches chat history for the college room.
+    """
+    user = request.user
+
+    # Check if the user has a profile and a college name
+    try:
+        user_profile = user.userprofile
+        user_college_name = user_profile.college_name
+
+        import re
+        if user_college_name:
+            room_name_slug = re.sub(r'[^\w\s-]', '', user_college_name).strip().lower().replace(' ', '_')
+        else:
+            room_name_slug = 'general_community'
+            messages.warning(request, "Your college name is not set. You are in a temporary general chat.")
+
+    except UserProfile.DoesNotExist:
+        messages.error(request, "Your profile is incomplete. Cannot access community chat.")
+        return redirect('dashboard')
+
+    # --- NEW: Fetch Chat History ---
+    # Retrieve the last 50 messages for this specific room slug
+    chat_history = ChatMessage.objects.filter(
+        college_room_slug=room_name_slug
+    ).select_related('user').order_by('-timestamp')[:50]
+
+    # Reverse the order so the oldest message is first for display
+    chat_history = chat_history[::-1]
+    # --- END NEW ---
+
+    context = {
+        'college_name': user_college_name,
+        'room_name_slug': room_name_slug,  # The sanitized name for Channels routing
+        'page_title': f"Chat: {user_college_name}",
+        'chat_history': chat_history,  # Pass history to the template
+    }
+
+    return render(request, 'main_app/college_community_chat.html', context)
+
+
+@login_required
+@require_POST
+def upload_chat_media(request):
+    """
+    Handles file upload and message saving for the college chat.
+    Sends a signal via Channels to notify all connected users.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Not logged in.'}, status=403)
+
+    college_room_slug = request.POST.get('room_name_slug')
+    content = request.POST.get('content', '').strip()
+    uploaded_file = request.FILES.get('media_file')
+
+    if not college_room_slug:
+        return JsonResponse({'status': 'error', 'message': 'Missing room ID.'}, status=400)
+
+    # Security Check: Verify user belongs to this college community
+    try:
+        user_college_name = request.user.userprofile.college_name
+        # Sanitize and compare the user's slug with the provided slug
+        user_room_slug = re.sub(r'[^\w\s-]', '', user_college_name).strip().lower().replace(' ', '_')
+        if user_room_slug != college_room_slug:
+            return JsonResponse({'status': 'error', 'message': 'Unauthorized chat access.'}, status=403)
+    except UserProfile.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Profile missing.'}, status=403)
+
+
+    # --- 1. Save the ChatMessage to the Database ---
+    if not content and not uploaded_file:
+        return JsonResponse({'status': 'error', 'message': 'Empty message or file.'}, status=400)
+
+    message_type = 'media' if uploaded_file else 'text'
+
+    chat_message = ChatMessage.objects.create(
+        college_room_slug=college_room_slug,
+        user=request.user,
+        content=content if content else None,
+        media_file=uploaded_file,
+        message_type=message_type
+    )
+
+    # --- 2. Send WebSocket Signal ---
+    try:
+        channel_layer = get_channel_layer()
+        room_group_name = 'chat_%s' % college_room_slug
+
+        # Determine media_url safely
+        # Note: If uploaded_file is True, chat_message.media_file is NOT None,
+        # but the .url access can still fail if storage config is bad. We must assume it's fixed now.
+        media_url_safe = chat_message.media_file.url if uploaded_file else ''
+
+        # Determine profile_icon_url safely
+        user_profile = request.user.userprofile
+        profile_icon_url_safe = user_profile.profile_icon.url if user_profile.profile_icon else ''
+
+        payload = {
+            'type': 'chat_message',  # Calls the chat_message method in consumers.py
+            'message_id': chat_message.id,
+            'sender': request.user.get_full_name() or request.user.username,
+            'content': content,
+            'message_type': message_type,
+            'media_url': media_url_safe,  # Use the safe variable
+            'timestamp_str': chat_message.timestamp.strftime('%H:%M'),
+            'profile_icon_url': profile_icon_url_safe,  # Use the safe variable
+        }
+
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            payload
+        )
+
+    except Exception as e:
+        # If Channels signaling fails, log it but let the DB save succeed.
+        print(f"CRITICAL CHANNELS ERROR: Failed to send real-time message for ID {chat_message.id}. Error: {e}")
+        # Log this error to the server console!
+        pass  # Allow the function to continue and return the 'ok' JSON response
+
+        # The function continues here and returns the success response,
+        # but now the traceback is logged if the real-time push failed.
+    return JsonResponse({'status': 'ok', 'message_id': chat_message.id})
+
+
+# In main_app/views.py
+
+@login_required
+@require_POST
+def delete_chat_message(request):
+    """
+    Allows a user to delete their own chat message, and sends a signal to remove it instantly.
+    """
+    message_id = request.POST.get('message_id')
+
+    if not message_id:
+        return JsonResponse({'status': 'error', 'message': 'Missing message ID.'}, status=400)
+
+    try:
+        # 1. Fetch the message, ensuring it belongs to the current user
+        message_to_delete = ChatMessage.objects.get(id=message_id, user=request.user)
+
+        # 2. Store the room slug before deletion to send the signal
+        room_slug = message_to_delete.college_room_slug
+
+        # 3. Delete the message (deletes media file automatically)
+        message_to_delete.delete()
+
+        # 4. Send a WebSocket signal to instantly remove the message for all connected users
+        channel_layer = get_channel_layer()
+        room_group_name = 'chat_%s' % room_slug
+
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'chat_delete',  # The new type for the consumer to handle
+                'message_id': message_id,
+            }
+        )
+
+        return JsonResponse({'status': 'ok'})
+
+    except ChatMessage.DoesNotExist:
+        # Message not found or the user is trying to delete someone else's message
+        return JsonResponse({'status': 'error', 'message': 'Message not found or unauthorized.'}, status=403)
+    except Exception as e:
+        print(f"ERROR DELETING CHAT MESSAGE: {e}")
+        return JsonResponse({'status': 'error', 'message': 'Internal server error during deletion.'}, status=500)

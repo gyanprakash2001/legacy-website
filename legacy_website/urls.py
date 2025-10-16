@@ -13,6 +13,9 @@ urlpatterns = [
     path('auth/instagram/connect/', views.instagram_auth_start, name='instagram_auth_start'),
     path('auth/instagram/callback/', views.instagram_auth_callback, name='instagram_auth_callback'),
     path('auth/callback', views.instagram_auth_callback, name='instagram_auth_callback'),
+    path('auth/callback/', views.instagram_auth_callback, name='instagram_auth_callback_slash'),
+    path('privacy-policy/', views.privacy_policy_view, name='privacy_policy'),
+    path('terms-of-service/', views.terms_of_service_view, name='terms_of_service'),
 ]
 
 # CRITICAL: The following lines are ONLY for local development with DEBUG=True.

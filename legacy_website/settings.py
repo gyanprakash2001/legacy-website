@@ -163,9 +163,9 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 # 2. Define individual credentials (already added for uploads).
-CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
-CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
-CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
+CLOUDINARY_CLOUD_NAME = os.environ.get('Legacy')
+CLOUDINARY_API_KEY = os.environ.get('378995153524857')
+CLOUDINARY_API_SECRET = os.environ.get('8sQ0biS1ApDhTI5YeslKmAoQTIo')
 
 # 3. CRITICAL NEW FIX: Construct the CLOUDINARY_URL from the individual components.
 #    This variable is often required by the storage backend to serve images.
@@ -206,4 +206,14 @@ INSTAGRAM_APP_ID = '692028360605970'  # Your App ID
 INSTAGRAM_APP_SECRET = 'fd1bfc72abdaa0e2efc74a386525ce82' # You must paste your App Secret
 
 # [3] The EXACT Redirect URI you set in Meta Developer Dashboard
-INSTAGRAM_REDIRECT_URI = 'https://gyan.pythonanywhere.com/auth/callback'
+INSTAGRAM_REDIRECT_URI = 'https://gyan.pythonanywhere.com/auth/callback/'
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)], # Change to your Redis host/port
+        },
+    },
+}

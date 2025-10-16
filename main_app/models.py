@@ -3,6 +3,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+
+
+# Assuming you have a UserProfile model already
+
+
+
+
 
 # In main_app/models.py
 class UserProfile(models.Model):
@@ -142,3 +150,34 @@ def manage_user_profile(sender, instance, created, **kwargs):
         except UserProfile.DoesNotExist:
             # This path should ideally never be hit, but acts as a safeguard.
             pass
+
+
+
+class ChatMessage(models.Model):
+    """Stores messages for college-specific chat rooms."""
+
+    # The 'college_room_slug' is the sanitized name used for Channels routing (e.g., 'kristu_jayanti')
+    college_room_slug = models.CharField(max_length=255, db_index=True)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    # Text is optional if a file is uploaded
+    content = models.TextField(blank=True, null=True)
+
+    # FileField to store media (photos/videos)
+    media_file = models.FileField(upload_to='chat_media/', blank=True, null=True)
+
+    # Type allows easy distinction in frontend
+    MESSAGE_TYPES = [
+        ('text', 'Text'),
+        ('media', 'Media'),
+    ]
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='text')
+
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f'{self.user.username} in {self.college_room_slug} at {self.timestamp.strftime("%H:%M")}'
+
+    class Meta:
+        ordering = ['timestamp']

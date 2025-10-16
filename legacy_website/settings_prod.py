@@ -98,9 +98,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
-CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
-CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
-CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
+CLOUDINARY_CLOUD_NAME = os.environ.get('Legacy')
+CLOUDINARY_API_KEY = os.environ.get('378995153524857')
+CLOUDINARY_API_SECRET = os.environ.get('8sQ0biS1ApDhTI5YeslKmAoQTIo')
 
 CLOUDINARY_URL = 'cloudinary://{}:{}@{}'.format(
     CLOUDINARY_API_KEY,
@@ -131,4 +131,14 @@ INSTAGRAM_APP_ID = '692028360605970'  # Your App ID
 INSTAGRAM_APP_SECRET = 'fd1bfc72abdaa0e2efc74a386525ce82' # You must paste your App Secret
 
 # [3] The EXACT Redirect URI you set in Meta Developer Dashboard
-INSTAGRAM_REDIRECT_URI = 'https://gyan.pythonanywhere.com/auth/instagram/callback/'
+INSTAGRAM_REDIRECT_URI = 'https://gyan.pythonanywhere.com/auth/callback/'
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)], # Change to your Redis host/port
+        },
+    },
+}

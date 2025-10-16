@@ -1,0 +1,371 @@
+{% extends "main_app/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="chat-container">
+    <h2>{{ college_name }} Chatroom</h2>
+    <div class="chat-box" id="chat-log">
+        <p class="system-message">Welcome to the **{{ college_name }}** Community Chat!</p>
+
+        {% for message in chat_history %}
+            {% with sender_name=message.user.get_full_name|default:message.user.username %}
+
+                <div class="chat-message-item {% if message.user == request.user %}message-self{% else %}message-other{% endif %}"
+                     id="chat-message-{{ message.id }}">
+
+                    <div class="message-header">
+                        <span class="sender-name">{% if message.user == request.user %}You{% else %}{{ sender_name }}{% endif %} - {{ message.timestamp|time:"H:i" }}</span>
+
+                        {% comment %} NEW: Delete Button for History Items {% endcomment %}
+                        {% if message.user == request.user %}
+                            <i class="fa-solid fa-trash delete-chat-btn" data-message-id="{{ message.id }}" title="Delete message"></i>
+                        {% endif %}
+                    </div>
+                    <div class="message-body">
+                        {% if message.message_type == 'media' and message.media_file %}
+                            {% with file_url=message.media_file.url %}
+                                {% if file_url|lower|slice:"-4:" == ".mp4" or file_url|lower|slice:"-5:" == ".webm" %}
+                                    <video controls class="chat-media-video"><source src="{{ file_url }}" type="video/mp4"></video>
+                                {% else %}
+                                    <img src="{{ file_url }}" alt="Chat Image" class="chat-media-image">
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                        {% if message.content %}
+                            <p class="message-text">{{ message.content }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endwith %}
+        {% empty %}
+            <p class="system-message">No history found. Start the conversation!</p>
+        {% endfor %}
+    </div>
+
+    <form id="chat-form" class="chat-input-area" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="media-file-input" class="file-upload-btn" title="Upload Photo/Video">
+            <i class="fa-solid fa-paperclip"></i>
+        </label>
+        <input type="file" id="media-file-input" name="media_file" accept="image/*,video/*" style="display: none;">
+
+        <input type="text" id="chat-message-input" name="content" placeholder="Type your message or add a file..." autofocus>
+        <input type="hidden" id="room-name-slug-field" name="room_name_slug" value="{{ room_name_slug }}">
+        <button type="submit" id="chat-message-submit">Send</button>
+    </form>
+
+</div>
+
+<style>
+    /* BASIC STYLING FOR CHAT (You will move this to style.css later) */
+    .chat-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #1e1e1e; /* Dark theme */
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+    .chat-box {
+        height: 400px;
+        overflow-y: scroll;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #2a2a2a;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #ddd;
+    }
+    .chat-input-area {
+        display: flex;
+        gap: 10px;
+        align-items: center; /* Align items vertically */
+    }
+    .file-upload-btn {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #aaa;
+    }
+    #chat-message-input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        background-color: #3a3a3a;
+        color: white;
+    }
+    #chat-message-submit {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        background-color: #4CAF50; /* Green submit button */
+        color: white;
+        cursor: pointer;
+    }
+
+    /* NEW STYLES for message display */
+    .chat-message-item {
+        padding: 8px 10px;
+        margin-bottom: 5px;
+        border-radius: 12px;
+        max-width: 80%;
+    }
+    .message-self {
+        margin-left: auto; /* Push to the right */
+        background-color: #3e536e; /* Self message color */
+        text-align: right;
+    }
+    .message-other {
+        margin-right: auto; /* Push to the left */
+        background-color: #2e3e50; /* Other message color */
+        text-align: left;
+    }
+    .message-header {
+        font-size: 0.8em;
+        font-weight: bold;
+        opacity: 0.8;
+        margin-bottom: 5px;
+        display: flex; /* Allow button to align with sender name */
+        justify-content: space-between; /* Push delete button to the side */
+        align-items: center;
+    }
+    .delete-chat-btn {
+        cursor: pointer;
+        color: #ff5555; /* Red color for delete icon */
+        font-size: 0.9em;
+        margin-left: 10px;
+    }
+    .chat-media-image, .chat-media-video {
+        max-width: 100%;
+        max-height: 200px;
+        display: block;
+        margin: 5px 0;
+        border-radius: 4px;
+    }
+    .system-message {
+        text-align: center;
+        font-style: italic;
+        color: #aaa;
+    }
+</style>
+
+<script>
+    // CRITICAL: Get the dynamic room name slug from the Django context
+    const roomNameElement = document.getElementById('room-name-slug');
+    const roomName = roomNameElement ? roomNameElement.dataset.roomNameSlug : '';
+    const userName = "{{ request.user.get_full_name|default:request.user.username }}";
+    const chatLog = document.getElementById('chat-log');
+    const chatForm = document.getElementById('chat-form');
+    const inputField = document.getElementById('chat-message-input');
+    const fileInput = document.getElementById('media-file-input');
+
+    // Connect to the WebSocket
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    // --- NEW: FUNCTION TO HANDLE DELETION VIA AJAX ---
+    function handleDeleteClick(e) {
+        // Find the message-id either from the button or its parent container
+        const messageId = e.target.dataset.messageId;
+        if (!confirm("Are you sure you want to delete this message? This cannot be undone.")) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('message_id', messageId);
+        // CRITICAL: Get the CSRF token from the input field in the form
+        formData.append('csrfmiddlewaretoken', chatForm.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch("{% url 'delete_chat_message' %}", {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                 // Check for 403 unauthorized or other error message from JSON response
+                 response.json().then(err => alert('Deletion failed: ' + (err.message || 'Server error.')));
+            }
+            // Deletion logic relies on the WebSocket signal for real-time removal
+        })
+        .catch(error => {
+            console.error('Deletion Error:', error);
+            alert('Failed to delete message.');
+        });
+    }
+
+
+    // --- FUNCTION TO DISPLAY MESSAGE (MODIFIED to include delete button and ID) ---
+    function displayMessage(data) {
+        // Fallback for simple text messages (though view should send rich payload)
+        const messageType = data.message_type || 'text';
+        const sender = data.sender;
+        const content = data.content;
+        const mediaUrl = data.media_url;
+        const messageId = data.message_id; // CRITICAL: Get the ID for real-time removal
+
+        const messageElement = document.createElement('div');
+        messageElement.className = 'chat-message-item';
+        messageElement.id = `chat-message-${messageId}`; // Set the ID for deletion targeting
+
+        const isSelf = sender === userName;
+        messageElement.classList.add(isSelf ? 'message-self' : 'message-other');
+
+        let messageHTML = `
+            <div class="message-header">
+                <span class="sender-name">${isSelf ? 'You' : sender}</span>
+                ${isSelf ? `<i class="fa-solid fa-trash delete-chat-btn" data-message-id="${messageId}" title="Delete message"></i>` : ''}
+            </div>
+            <div class="message-body">
+        `;
+
+        // Add Media Content
+        if (messageType === 'media' && mediaUrl) {
+            const fileExtension = mediaUrl.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                messageHTML += `<img src="${mediaUrl}" alt="Chat Image" class="chat-media-image">`;
+            } else if (['mp4', 'webm', 'ogg'].includes(fileExtension)) {
+                messageHTML += `<video controls class="chat-media-video"><source src="${mediaUrl}" type="video/${fileExtension}"></video>`;
+            }
+        }
+
+        // Add Text Content (if it exists)
+        if (content) {
+            messageHTML += `<p class="message-text">${content}</p>`;
+        }
+
+        messageHTML += `</div>`;
+        messageElement.innerHTML = messageHTML;
+
+        // NEW: Attach event listener for the delete button on newly rendered messages
+        if (isSelf) {
+            const deleteButton = messageElement.querySelector('.delete-chat-btn');
+            if (deleteButton) {
+                deleteButton.addEventListener('click', handleDeleteClick);
+            }
+        }
+
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll
+    }
+    // --- END FUNCTION TO DISPLAY MESSAGE ---
+
+
+    // --- MODIFIED: chatSocket.onmessage to handle both messages and deletions ---
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        // CHECK 1: Handle deletion signal (type is set by the consumer)
+        if (data.type === 'delete_instruction') {
+            const msgElement = document.getElementById(`chat-message-${data.message_id}`);
+            if (msgElement) {
+                msgElement.remove(); // Remove the message from the DOM instantly
+            }
+            return;
+        }
+
+        // CHECK 2: Handle normal message display
+        if (data.sender !== 'System') {
+            displayMessage(data);
+        } else {
+            // Handle system messages (e.g., connection status)
+            const systemMessageElement = document.createElement('p');
+            systemMessageElement.className = 'system-message';
+            systemMessageElement.textContent = data.message;
+            chatLog.appendChild(systemMessageElement);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+    };
+    // --- END chatSocket.onmessage ---
+
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+        chatLog.innerHTML += '<p class="system-message">Disconnected from chat. Please refresh.</p>';
+    };
+
+    // Display file name when selected
+    fileInput.onchange = function() {
+        if (this.files.length > 0) {
+            inputField.placeholder = `Ready to send: ${this.files[0].name}`;
+        } else {
+            inputField.placeholder = `Type your message or add a file...`;
+        }
+    };
+
+
+    // --- FORM SUBMISSION (AJAX for file/text) ---
+    chatForm.onsubmit = function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(chatForm);
+
+        const textContent = inputField.value.trim();
+        const fileContent = fileInput.files.length > 0;
+
+        if (!textContent && !fileContent) {
+            return; // Don't send empty submissions
+        }
+
+        // Send the data/file to the Django upload view
+        fetch("{% url 'upload_chat_media' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                // Fetch automatically handles Content-Type for FormData
+                'X-CSRFToken': chatForm.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            // Clear the input and file field immediately upon successful submission attempt
+            inputField.value = '';
+            fileInput.value = '';
+            inputField.placeholder = `Type your message or add a file...`; // Reset placeholder
+
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status !== 'ok') {
+                alert('Error sending message: ' + (data.message || 'Unknown error.'));
+            }
+            // Message rendering is now handled entirely by the WebSocket signal from the server
+        })
+        .catch(error => {
+            console.error('Upload Error:', error);
+            alert('Failed to send message/media due to a server error.');
+        });
+    };
+
+    // Allow sending on Enter keypress (submits the form)
+    inputField.onkeyup = function(e) {
+        if (e.key === 'Enter') {
+             chatForm.requestSubmit();
+        }
+    };
+
+    // --- NEW: Attach Deletion Handlers to History Messages on load ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const deleteButtons = document.querySelectorAll('.delete-chat-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', handleDeleteClick);
+        });
+
+        // Ensure auto-scroll runs here too, in case it was missed by the previous listener
+        const chatLog = document.getElementById('chat-log');
+        if (chatLog) {
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+    });
+
+</script>
+
+<div id="room-name-slug" data-room-name-slug="{{ room_name_slug|escapejs }}"></div>
+
+{% endblock content %}
