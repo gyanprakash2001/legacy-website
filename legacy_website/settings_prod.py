@@ -98,9 +98,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
-CLOUDINARY_CLOUD_NAME = os.environ.get('Legacy')
-CLOUDINARY_API_KEY = os.environ.get('378995153524857')
-CLOUDINARY_API_SECRET = os.environ.get('8sQ0biS1ApDhTI5YeslKmAoQTIo')
+# 2. Define individual credentials (CORRECTED SYNTAX with actual fallback values)
+# NOTE: The actual values must be inside the quotes of the fallback
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', 'Legacy')
+CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY', '378995153524857')
+CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET', '8sQ0biS1ApDhTI5YeslKmAoQTIo')
 
 CLOUDINARY_URL = 'cloudinary://{}:{}@{}'.format(
     CLOUDINARY_API_KEY,
