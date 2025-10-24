@@ -1,46 +1,226 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Event Registrations</title>
+    <title>Event Registrations{% if is_shortlisted_view %} (Shortlisted){% endif %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <style>
-        body {
-            background-color: #f0f2f5;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        /*
+        --------------------------------------------------
+        REGISTRATIONS PAGE STYLING (Monochrome Dark Theme)
+        --------------------------------------------------
+        */
+
+        :root {
+            /* MONOCHROME ACCENT CHANGE: Uses only white/gray shades */
+            --color-primary-button: #ffffff; /* White accent color (for buttons/accents) */
+            --color-up-text: #000000; /* Text on bright button */
+            --color-text-dark: #f0f0f0; /* Off-white text */
+            --color-border-light: #444444; /* Darker border lines */
+            --color-secondary-bg: #292929; /* Darker input/hover background */
+            --color-placeholder: #888888; /* Gray text for details */
+            --color-left-bg: #1e1e1e; /* Floating card background */
+            --color-link: #ffffff; /* Links should now be white/light gray */
+            --color-table-header: #333333; /* Slightly lighter dark for table headers */
         }
-        .registration-container { /* Renamed for clarity on this page */
+
+        /* 1. Global Page Background Fix */
+        body {
+            background-color: #121212 !important;
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        /* 2. Main Card Container (Floating Card) */
+        .registration-container {
             max-width: 900px;
             margin: 40px auto;
             padding: 30px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: var(--color-left-bg, #1e1e1e);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            color: var(--color-text-dark, #f0f0f0);
         }
+
+        /* 3. Header and Back Link */
         .page-header {
-            border-bottom: 1px solid #f0f2f5;
+            border-bottom: 1px solid var(--color-border-light, #444444);
             padding-bottom: 15px;
             margin-bottom: 25px;
         }
+
         .page-header h1 {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             margin: 0;
-            color: #1c1e21;
+            color: var(--color-text-dark, #f0f0f0);
         }
+
+        .page-header a {
+            text-decoration: none;
+            color: var(--color-link, #ffffff); /* White link */
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .page-header a:hover {
+            color: var(--color-placeholder, #888888); /* Subtle gray hover */
+        }
+
+        /* Shortlisted Button */
+        .shortlist-view-btn {
+        background-color: var(--color-primary-button, #ffffff);
+        /* CRITICAL FIX: Ensure text is BLACK (#000000) for readability on white button */
+        color: #000000 !important;
+        padding: 8px 15px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.9em;
+        transition: background-color 0.2s;
+        text-decoration: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    }
+        .shortlist-view-btn:hover { background-color: #dcdcdc; }
+
+        .registration-count {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        /* 4. Table Styling */
+        .registrations-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        .registrations-table th {
+            background-color: var(--color-table-header, #333333);
+            color: var(--color-text-dark, #f0f0f0);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .registrations-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border-light, #444444);
+            color: var(--color-text-dark, #f0f0f0);
+        }
+
+        .registrations-table tbody tr:hover {
+            background-color: var(--color-secondary-bg, #292929);
+        }
+
+        .registrations-table td a {
+            color: var(--color-link, #ffffff);
+            text-decoration: none;
+        }
+
+        .registrations-table td a:hover {
+            text-decoration: underline;
+        }
+
+        .no-registrations-message {
+            padding: 20px;
+            text-align: center;
+            color: var(--color-placeholder, #888888);
+        }
+
+        /* 5. Custom Shortlist Toggle Switch (Monochrome Themed) */
+        .switch { position: relative; display: inline-block; width: 45px; height: 25px; vertical-align: middle; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-border-light, #444444); /* Off state: Dark Gray */
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 17px;
+            width: 17px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #ffffff; /* Toggle circle: White */
+            transition: .4s;
+        }
+        /* ON state: Uses the Success/White accent */
+        input:checked + .slider {
+            background-color: #4CAF50; /* Keep green for explicit success/ON state */
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #4CAF50;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        .slider.round { border-radius: 25px; }
+        .slider.round:before { border-radius: 50%; }
+
+        /* Score styling fix */
+        .registrations-table strong {
+            color: #4CAF50; /* Keep green for score visibility */
+        }
+        .registrations-table div {
+            color: var(--color-placeholder, #888888);
+        }
+
+        .registrations-table span {
+            color: #FF6347; /* Keep red-orange for pending/N/A */
+        }
+
+        .registrations-table .fa-check-circle {
+             color: #4CAF50 !important; /* Keep checkmark green */
+        }
+
     </style>
 </head>
 <body>
 
 <div class="registration-container">
     <div class="page-header">
-        <h1>Registrations for {{ event.event_name }}</h1>
-        <a href="{% url 'event_log' %}" style="text-decoration: none; color: #007bff; font-weight: 500;">&larr; Back to My Posted Events</a>
+        <h1 style="display: flex; justify-content: space-between; align-items: center;">
+            Registrations for {{ event.event_name }}
+
+            <!-- ⭐ "VIEW SHORTLISTED" BUTTON ⭐ -->
+            {% if not is_shortlisted_view %}
+            <a href="{% url 'shortlisted_applicants' event_id=event.id %}" class="shortlist-view-btn">
+                <i class="fa fa-users"></i> View Shortlisted
+            </a>
+            {% endif %}
+        </h1>
+
+        <a href="{% url 'event_log' %}" style="text-decoration: none; color: var(--color-link, #ffffff); font-weight: 500;">&larr; Back to My Posted Events</a>
+
+        <!-- BACK LINK FOR SHORTLISTED VIEW -->
+        {% if is_shortlisted_view %}
+        <a href="{% url 'registrations_view' event_id=event.id %}" style="text-decoration: none; color: var(--color-link, #ffffff); font-weight: 500; margin-top: 5px; display: inline-block;">&larr; Back to All Applicants</a>
+        {% endif %}
+
     </div>
 
     <div class="registration-list-content">
+        {% if is_shortlisted_view %}
+            <h2 style="font-size: 1.3rem; margin-bottom: 15px;">Shortlisted Applicants</h2>
+        {% endif %}
+
         {% if registrations %}
             <p class="registration-count">Total Registrations: {{ registrations|length }}</p>
 
@@ -52,6 +232,22 @@
                         <th>Email Address</th>
                         <th>WhatsApp Number</th>
                         <th>Registration Date</th>
+
+                        <!-- ⭐ NEW SHORTLISTED HEADER ⭐ -->
+                        <th>Shortlisted</th>
+                        <!-- ---------------------------- -->
+
+                        {% if event.screening_type != 'none' %}
+                            <th>
+                                {% if event.screening_type == 'aptitude' %}
+                                    <span style="color: #4CAF50;">Test Score</span>
+                                {% elif event.screening_type == 'video' %}
+                                    Video Submission
+                                {% elif event.screening_type == 'photo' %}
+                                    Photo Submission
+                                {% endif %}
+                            </th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -64,15 +260,134 @@
                         </td>
                         <td>{{ reg.whatsapp_number|default:"N/A" }}</td>
                         <td>{{ reg.applied_at|date:"F d, Y P" }}</td>
-                    </tr>
+
+                        <!-- ⭐ SHORTLISTED TOGGLE CELL ⭐ -->
+                        <td>
+                            <!-- The toggle logic applies ONLY if we are viewing the FULL list -->
+                            <label class="switch">
+                                <input type="checkbox"
+                                       data-application-id="{{ reg.pk }}"
+                                       {% if reg.is_shortlisted %}checked{% endif %}
+                                       {% if is_shortlisted_view %}disabled{% endif %}>
+                                <span class="slider round"></span>
+                            </label>
+                            {% if is_shortlisted_view %}
+                                <!-- Display checkmark if on the filtered view -->
+                                <i class="fa fa-check-circle" style="color: #4CAF50; margin-left: 5px;"></i>
+                            {% endif %}
+                        </td>
+                        <!-- ----------------------------- -->
+
+                        {% if event.screening_type != 'none' %}
+                            <td>
+                                {% with submission_data=applicant_submissions|get_item:reg.user.pk %}
+
+                                    {% if submission_data %}
+
+                                        {% if event.screening_type == 'aptitude' %}
+                                            <strong>{{ submission_data.score }}</strong>
+                                            <div style="font-size: 0.8em; color: var(--color-placeholder, #888888);">
+                                                (Time: {{ submission_data.time_taken_seconds|floatformat:"0" }}s)
+                                            </div>
+
+                                        {% elif event.screening_type == 'video' %}
+                                            {% if submission_data.media_url %}
+                                                <a href="{{ submission_data.media_url }}" target="_blank" style="color: #4CAF50;">
+                                                    <i class="fa fa-video"></i> View Video
+                                                </a>
+                                            {% else %}
+                                                 <span style="color: #FF6347;">Pending/N/A</span>
+                                            {% endif %}
+
+                                        {% elif event.screening_type == 'photo' %}
+                                            {% if submission_data.media_url %}
+                                                <a href="{{ submission_data.media_url }}" target="_blank" style="color: #4CAF50;">
+                                                    <i class="fa fa-image"></i> View Photo
+                                                </a>
+                                            {% else %}
+                                                 <span style="color: #FF6347;">Pending/N/A</span>
+                                            {% endif %}
+
+                                        {% endif %}
+
+                                    {% else %}
+                                        <span style="color: #FF6347;">Pending</span>
+                                    {% endif %}
+
+                                {% endwith %}
+                            </td>
+                        {% endif %}
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
         {% else %}
-            <p class="no-registrations-message">No one has registered for this event yet.</p>
+            <p class="no-registrations-message">
+                {% if is_shortlisted_view %}
+                    No applicants have been shortlisted yet.
+                {% else %}
+                    No one has registered for this event yet.
+                {% endif %}
+            </p>
         {% endif %}
     </div>
 </div>
 
+<!-- Load necessary scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Script for the AJAX toggle -->
+<script>
+    // CRITICAL: Prevent usage of browser alert()
+    function showCustomAlert(message) {
+        console.error("ALERT: " + message);
+        // In a real app, you would show a custom modal here.
+    }
+
+    $(document).ready(function() {
+        // Find all checkboxes inside the 'switch' class and bind the change event
+        $('.switch input[type="checkbox"]').change(function() {
+            const checkbox = $(this);
+            // Read the application ID from the data attribute
+            const applicationId = checkbox.data('application-id');
+            const isChecked = checkbox.is(':checked');
+            const url = `/registrations/toggle-shortlist/${applicationId}/`;
+
+            // CRITICAL: Ensure the Django CSRF token is available
+            // Check both standard location and hidden div location
+            const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+            if (!csrfToken) {
+                showCustomAlert('Security error: CSRF token missing. Cannot update status.');
+                checkbox.prop('checked', !isChecked);
+                return;
+            }
+
+            // Send the AJAX request
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: csrfToken, // Pass the token
+                    action: isChecked ? 'shortlist' : 'unshortlist'
+                },
+                success: function(response) {
+                    if (response.status !== 'success') {
+                        showCustomAlert('Error: Could not update status. ' + (response.message || 'Unknown error.'));
+                        checkbox.prop('checked', !isChecked);
+                    }
+                    // Success is implicitly handled by the toggle changing state
+                },
+                error: function(xhr, status, error) {
+                    showCustomAlert('Server communication error. Please try again.');
+                    checkbox.prop('checked', !isChecked);
+                }
+            });
+        });
+    });
+</script>
+
+<!-- CRITICAL: Ensure you have a csrf_token available for the AJAX POST -->
+<div style="display:none;">{% csrf_token %}</div>
 </body>
 </html>

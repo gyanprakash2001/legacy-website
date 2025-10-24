@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        /* Base styles */
+        body { background-color: #121212 !important; color: #f0f0f0; }
+        .test-container { max-width: 900px; margin: 20px auto; padding: 30px; background-color: #1e1e1e; border-radius: 8px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); }
+        h1 { color: #f0f0f0; font-size: 1.8em; margin-bottom: 20px; text-align: center; }
+
+        /* Timer Bar (Fixed at top) */
+        .timer-bar {
+            position: sticky; top: 0; left: 0; width: 100%;
+            background-color: #38703E; color: #ffffff;
+            padding: 10px 0; text-align: center; z-index: 1000;
+            font-size: 1.2em; font-weight: bold;
+        }
+
+        /* Question Styles */
+        .question-item {
+            background-color: #292929;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 5px solid #ffffff;
+        }
+        .question-text { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; }
+        .options-list { list-style: none; padding: 0; }
+        .options-list li { margin: 10px 0; }
+        .options-list label { display: block; cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.1s; }
+        .options-list label:hover { background-color: #383838; }
+        .options-list input[type="radio"] { margin-right: 10px; accent-color: #ffffff; }
+
+        /* Submit Button */
+        .submit-btn {
+            display: block; width: 100%; padding: 15px; margin-top: 30px;
+            background-color: #ffffff; color: #000000; border: none; border-radius: 25px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: background-color 0.2s;
+        }
+        .submit-btn:hover { background-color: #dcdcdc; }
+
+        /* Hidden input container */
+        .hidden-inputs { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="timer-bar">
+        Time Remaining: <span id="timer-display"></span>
+    </div>
+
+    <div class="test-container">
+        <h1>Aptitude Test: {{ event.event_name }}</h1>
+        <p style="color: #888888; text-align: center;">Total Questions: {{ questions|length }}. Time Limit: {{ aptitude_test.time_limit_minutes }} minutes.</p>
+
+        <form method="post" id="aptitude-test-form">
+            {% csrf_token %}
+
+            <div class="hidden-inputs">
+                <input type="hidden" name="time_taken_seconds" id="time-taken-input" value="0">
+            </div>
+
+            {% for question in questions %}
+                <div class="question-item">
+                    <div class="question-text">
+                        Q{{ forloop.counter }}. {{ question.question_text }} ({{ question.points }} Points)
+                    </div>
+
+                    <ul class="options-list">
+                        <li>
+                            <label>
+                                <input type="radio" name="q_{{ question.id }}" value="A">
+                                A) {{ question.option_a }}
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                <input type="radio" name="q_{{ question.id }}" value="B">
+                                B) {{ question.option_b }}
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                <input type="radio" name="q_{{ question.id }}" value="C">
+                                C) {{ question.option_c }}
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                <input type="radio" name="q_{{ question.id }}" value="D">
+                                D) {{ question.option_d }}
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="submit-btn" id="submit-button">Submit Test</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('aptitude-test-form');
+        const timerDisplay = document.getElementById('timer-display');
+        const timeTakenInput = document.getElementById('time-taken-input');
+        const totalTimeSeconds = {{ time_limit_seconds }};
+        let timeElapsed = 0;
+        let timerInterval;
+
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            let timeLeft = totalTimeSeconds;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timeElapsed++;
+
+                // Update time remaining display
+                timerDisplay.textContent = formatTime(timeLeft);
+
+                // Update hidden field for time taken
+                timeTakenInput.value = timeElapsed;
+
+                if (timeLeft <= 60) {
+                    timerDisplay.style.color = 'red'; // Red warning in the last minute
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Time's up! The test will be automatically submitted.");
+                    // Force submission
+                    form.submit();
+                }
+            }, 1000);
+        }
+
+        // Prevent navigation away warning
+        window.addEventListener('beforeunload', function (e) {
+            // Only warn if the test hasn't been submitted yet
+            if (timerInterval) {
+                e.preventDefault();
+                e.returnValue = ''; // Required for some browsers
+            }
+        });
+
+        // Stop timer and confirm submission when button is clicked
+        form.addEventListener('submit', function(e) {
+            clearInterval(timerInterval);
+            timerInterval = null; // Clear interval reference to stop beforeunload warning
+            document.getElementById('submit-button').disabled = true;
+            document.getElementById('submit-button').textContent = "Submitting...";
+        });
+
+        // Start the timer when the page loads
+        startTimer();
+    </script>
+
+</body>
+</html>

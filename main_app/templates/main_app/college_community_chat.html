@@ -151,8 +151,7 @@
 
 <script>
     // CRITICAL: Get the dynamic room name slug from the Django context
-    const roomNameElement = document.getElementById('room-name-slug');
-    const roomName = roomNameElement ? roomNameElement.dataset.roomNameSlug : '';
+    const roomName = "{{ room_name_slug|escapejs }}";
     const userName = "{{ request.user.get_full_name|default:request.user.username }}";
     const chatLog = document.getElementById('chat-log');
     const chatForm = document.getElementById('chat-form');
@@ -260,7 +259,7 @@
         const data = JSON.parse(e.data);
 
         // CHECK 1: Handle deletion signal (type is set by the consumer)
-        if (data.type === 'delete_instruction') {
+        if (data.type === 'chat_delete') { // <-- CHANGED from 'delete_instruction'
             const msgElement = document.getElementById(`chat-message-${data.message_id}`);
             if (msgElement) {
                 msgElement.remove(); // Remove the message from the DOM instantly
@@ -365,7 +364,5 @@
     });
 
 </script>
-
-<div id="room-name-slug" data-room-name-slug="{{ room_name_slug|escapejs }}"></div>
 
 {% endblock content %}

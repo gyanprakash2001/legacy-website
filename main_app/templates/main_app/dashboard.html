@@ -57,29 +57,32 @@
 
         <main class="main-feed">
             <div class="feed-header">
-            <h1>
-                {% if is_college_community %}  {{ page_heading }}
-                {% elif community_page %}
-                    My Community
-                    {% if community_page %}
-                        <a href="{% url 'college_community_chat' %}" class="header-link chat-button">
-                            <i class="fa-solid fa-comments"></i> Community Chat
-                        </a>
+                <h1>
+                    {% if is_college_community %}  {{ page_heading }}
+                    {% elif community_page %}
+                        My Community
+                    {% else %}
+                        <a href="{% url 'dashboard' %}">Home</a>
                     {% endif %}
-                {% else %}
-                    <a href="{% url 'dashboard' %}">Home</a>
-                {% endif %}
-            </h1>
-            <div class="header-links-group">
-                {% if community_page or is_college_community %}
-                    <a href="{% url 'dashboard' %}" class="header-link">Home</a>
-                {% else %}
-                    <a href="{% url 'my_community' %}" class="header-link">My Community</a>
-                {% endif %}
-
+                </h1>
+                <div class="header-links-group">
+                    {% if community_page or is_college_community %}
+                        <a href="{% url 'dashboard' %}" class="header-link">Home</a>
+                    {% else %}
+                        <a href="{% url 'my_community' %}" class="header-link">My Community</a>
+                    {% endif %}
                 </div>
-        </div>
-                    <div class="start-post-container">
+            </div>
+
+            {% if community_page %}
+            <div class="community-chat-container">
+                <a href="{% url 'college_community_chat' %}" class="community-chat-button">
+                    <i class="fa-solid fa-comments"></i> Community Chat
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="start-post-container">
                 <img src="{% if request.user.userprofile.profile_icon %}{{ request.user.userprofile.profile_icon.url }}{% else %}{% static 'images/default_profile_icon.png' %}{% endif %}" alt="Profile Picture" class="profile-pic">
                 <a href="{% url 'create_post' %}" class="start-post-link">
                     <input type="text" placeholder="Share your event's memories" readonly>
@@ -252,6 +255,8 @@
                     <div class="autocomplete-container">
                         <input type="text" id="state-filter-input" placeholder="Search state...">
                         <input type="hidden" id="selected-state-name" name="state-filter-name">
+
+                        <datalist id="state-suggestions-filter-modal"></datalist>
                     </div>
                 </div>
 
@@ -271,5 +276,49 @@
     </div>
     <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define the setup function for the filter modal autocomplete
+            function setupStateFilterAutocomplete() {
+                // Target the filter modal input and the new datalist element
+                const stateInput = document.getElementById('state-filter-input');
+                const datalist = document.getElementById('state-suggestions-filter-modal');
+                // Use the Django template tag for the URL
+                const apiUrl = "{% url 'state_list_api' %}";
+
+                if (!stateInput || !datalist) return; // Exit if elements are not found
+
+                // 1. Link the input to the datalist manually
+                stateInput.setAttribute('list', 'state-suggestions-filter-modal');
+
+                // 2. Event Listener for fetching suggestions on input
+                stateInput.addEventListener('input', function() {
+                    const query = this.value;
+                    if (query.length < 2) {
+                        datalist.innerHTML = '';
+                        return;
+                    }
+
+                    // Fetch suggestions from the new API
+                    fetch(`${apiUrl}?q=${query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            datalist.innerHTML = ''; // Clear existing options
+
+                            data.forEach(stateName => {
+                                const option = document.createElement('option');
+                                option.value = stateName;
+                                datalist.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching states for Filter Modal:', error));
+                });
+            }
+
+            // Call the setup function when the page loads
+            setupStateFilterAutocomplete();
+        });
+    </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import requests
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
+from .forms import AptitudeTestForm, AptitudeQuestionFormSet
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.utils import timezone
@@ -10,10 +11,13 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.db.models import Q, F  # Ensure F is imported at the top of your views.py
-from .models import Event, Post, UserProfile, MediaFile, EventApplicationDetails, Follow, College, EventCategory, \
-    EventType, ChatMessage
-from .forms import UserRegistrationForm, PostForm, EventCreationForm, EventApplicationForm, UserUpdateForm, UserProfileUpdateForm
-from datetime import datetime
+from .models import (
+    Event, Post, UserProfile, MediaFile, EventApplicationDetails, Follow, College,
+    EventCategory, EventType, ChatMessage, AptitudeTest, AptitudeQuestion,
+    AptitudeTestAttempt, VideoScreeningSubmission, PhotoScreeningSubmission, State
+)
+from .forms import UserRegistrationForm, PostForm, EventCreationForm, EventApplicationForm, UserUpdateForm, UserProfileUpdateForm, VideoSubmissionForm, PhotoSubmissionForm
+from datetime import datetime, timedelta
 from django.views.decorators.http import require_POST
 from .forms import MandatoryProfileForm
 from .models import UserProfile, College
@@ -27,6 +31,7 @@ from .models import Post, MediaFile # Ensure these are imported from .models
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import re
+
 
 
 
@@ -157,14 +162,13 @@ def dashboard(request):
     return render(request, 'main_app/dashboard.html', context)
 
 
-
-
 @login_required
+@profile_setup_required
 def create_event(request):
-    event_link = None
+    event_link = None  # Not strictly necessary, but good to keep if used later
     initial_data = {}
 
-    # --- 1. DEFINE CATEGORIES EARLY (Fixes NameError) ---
+    # --- 1. DEFINE CATEGORIES (MUST BE DEFINED EARLY) ---
     event_categories = EventCategory.objects.all().order_by('name')
     categories_with_types = []
     for category in event_categories:
@@ -176,12 +180,12 @@ def create_event(request):
     # --- END CATEGORIES DEFINITION ---
 
     # --- 2. STATE AUTOFILL LOGIC (Robust String Extraction) ---
+    # Wrap this in try/except to prevent an error from blocking the function return
     user_college_state = None
     try:
         user_profile = request.user.userprofile
         user_college_name_str = user_profile.college_name
 
-        # Extract State using the robust rsplit method (as discussed)
         separator = ' - '
         if separator in user_college_name_str:
             state_parts = user_college_name_str.rsplit(separator, 1)
@@ -190,6 +194,7 @@ def create_event(request):
     except UserProfile.DoesNotExist:
         pass
     except Exception:
+        # Pass on any exception here to allow the rest of the view to execute
         pass
 
     if user_college_state:
@@ -201,15 +206,30 @@ def create_event(request):
         if form.is_valid():
             event = form.save(commit=False)
             event.organizer = request.user
-            event.save()
+            event.save()  # Save the event
+
+            # ... (Keep existing screening redirection logic) ...
+            selected_screening = event.screening_type
+
+            if selected_screening != 'none':
+                messages.info(request,
+                              f'Event saved! Now, please finalize your {selected_screening.title()} Screening setup.')
+                return redirect('screening_setup', event_link_key=event.event_link_key,
+                                screening_type=selected_screening)
+
             messages.success(request, 'Event created successfully!')
-            return redirect('dashboard')
+            return redirect('event_log')
+
+            # If POST is invalid, execution falls through to the final return,
+        # ensuring the form is re-rendered with errors.
+
     else:
         # GET Request: Initialize form with autofilled data
         form = EventCreationForm(initial=initial_data)
 
-    # The final return now correctly uses the form and categories_with_types (defined at the start).
+    # 4. FINAL RETURN: This must be hit on both GET requests and failed POST requests.
     return render(request, 'main_app/create_event.html', {'form': form, 'categories_with_types': categories_with_types})
+
 
 def get_events(request):
     events = Event.objects.all()
@@ -227,6 +247,7 @@ def get_events(request):
 @login_required
 def apply_for_event(request, event_link_key):
     event = get_object_or_404(Event, event_link_key=event_link_key)
+
     if request.method == 'POST':
         form = EventApplicationForm(request.POST)
         if form.is_valid():
@@ -238,8 +259,26 @@ def apply_for_event(request, event_link_key):
                 application.event = event
                 application.save()
                 messages.success(request, f'You have successfully applied for {event.event_name}!')
+
+                # ⭐ NEW REDIRECTION CHECK AFTER SUCCESSFUL APPLICATION ⭐
+                if event.screening_type == 'aptitude':
+                    # Ensure the test is configured before redirecting
+                    if hasattr(event, 'aptitude_test'):
+                        return redirect('test_start_page', event_link_key=event.event_link_key)
+
+                elif event.screening_type == 'video':
+                    # Redirect to media upload page for video submission
+                    return redirect('media_upload_page', event_link_key=event.event_link_key, media_type='video')
+
+                elif event.screening_type == 'photo':
+                    # Redirect to media upload page for photo submission
+                    return redirect('media_upload_page', event_link_key=event.event_link_key, media_type='photo')
+
+                # Default redirect if screening_type is 'none'
+                return redirect('dashboard')
             return redirect('dashboard')
-    else:
+
+    else:  # GET Request
         initial_data = {}
         try:
             user_profile = request.user.userprofile
@@ -251,6 +290,23 @@ def apply_for_event(request, event_link_key):
         except UserProfile.DoesNotExist:
             pass
 
+        # ⭐ CHECK IF APPLICATION ALREADY EXISTS AND REDIRECT TO SCREENING PAGE ⭐
+        if EventApplicationDetails.objects.filter(user=request.user, event=event).exists():
+            messages.info(request, "You've already applied. Checking required screening status...")
+
+            if event.screening_type == 'aptitude' and hasattr(event, 'aptitude_test'):
+                return redirect('test_start_page', event_link_key=event.event_link_key)
+
+            elif event.screening_type == 'video':
+                return redirect('media_upload_page', event_link_key=event.event_link_key, media_type='video')
+
+            elif event.screening_type == 'photo':
+                return redirect('media_upload_page', event_link_key=event.event_link_key, media_type='photo')
+
+            # If application exists but screening is 'none', or media/test is done, go to dashboard.
+            messages.info(request, "Application confirmed. See you at the event!")
+            return redirect('dashboard')
+
         form = EventApplicationForm(initial=initial_data)
 
     context = {
@@ -258,7 +314,6 @@ def apply_for_event(request, event_link_key):
         'event': event
     }
     return render(request, 'main_app/apply_for_event.html', context)
-
 
 def event_details(request, event_title):
     event = Event.objects.filter(event_name=event_title).first()
@@ -350,28 +405,67 @@ def my_applications_view(request):
     return render(request, 'main_app/my_applications_log.html', context)
 
 
-
+# ... (inside views.py) ...
 
 @login_required
 def registrations_view(request, event_id):
     # Get the specific event or return a 404 error
     event = get_object_or_404(Event, id=event_id, organizer=request.user)
 
-    # Get all applications for this specific event
+    # Get all applications for this specific event, ordered by name
     registrations = EventApplicationDetails.objects.filter(event=event).order_by('name')
+
+    # ⭐ NEW LOGIC: Check for Screening Type and Fetch Submissions ⭐
+    screening_type = event.screening_type
+    applicant_submissions = {}
+
+    if screening_type == 'aptitude':
+        # Fetch scores if aptitude test is enabled and set up
+        if hasattr(event, 'aptitude_test'):
+            aptitude_test = event.aptitude_test
+            # Fetch all attempts for this test, linking to the User for easy lookup
+            attempts = aptitude_test.attempts.select_related('user')
+
+            # Map scores to the user ID for quick retrieval in the template
+            for attempt in attempts:
+                # Use user_id as the key, as application details also link to user
+                applicant_submissions[attempt.user_id] = {
+                    'score': attempt.score,
+                    'time_taken_seconds': attempt.time_taken_seconds
+                }
+
+    elif screening_type == 'video':
+        # Fetch Video Submissions (One-to-One from User model)
+        submissions = VideoScreeningSubmission.objects.filter(event=event).select_related('user')
+        for sub in submissions:
+            applicant_submissions[sub.user.pk] = {'media_url': sub.video_file.url}
+
+    elif screening_type == 'photo':
+        # Fetch Photo Submissions (One-to-One from User model)
+        submissions = PhotoScreeningSubmission.objects.filter(event=event).select_related('user')
+        for sub in submissions:
+            applicant_submissions[sub.user.pk] = {'media_url': sub.photo_file.url}
 
     context = {
         'event': event,
-        'registrations': registrations
+        'registrations': registrations,
+        'screening_type': screening_type,  # New flag for template
+        'applicant_submissions': applicant_submissions,  # New data for template
     }
+
     return render(request, 'main_app/registrations.html', context)
 
 
+
 def college_autocomplete(request):
+    """
+    Provides a list of college names for an autocomplete field.
+    """
     query = request.GET.get('q', '')
     colleges = College.objects.filter(name__icontains=query)[:10]  # Limit to 10 results
     results = [{'id': college.id, 'name': college.name} for college in colleges]
     return JsonResponse(results, safe=False)
+
 
 
 @login_required
@@ -1335,3 +1429,397 @@ def delete_chat_message(request):
     except Exception as e:
         print(f"ERROR DELETING CHAT MESSAGE: {e}")
         return JsonResponse({'status': 'error', 'message': 'Internal server error during deletion.'}, status=500)
+
+
+# In main_app/views.py (Replace aptitude_test_setup_view)
+
+@login_required
+def screening_setup_view(request, event_link_key, screening_type):
+    event = get_object_or_404(Event, event_link_key=event_link_key, organizer=request.user)
+
+    # 1. Handle Setup based on Screening Type
+    if screening_type == 'aptitude':
+        # --- APTITUDE TEST SETUP LOGIC (REUSED) ---
+        try:
+            aptitude_test = event.aptitude_test
+        except AptitudeTest.DoesNotExist:
+            aptitude_test = None
+
+        if request.method == 'POST':
+            # Note: We must re-instantiate question_formset on POST for validation
+            test_form = AptitudeTestForm(request.POST, instance=aptitude_test)
+
+            if test_form.is_valid():
+                aptitude_test_instance = test_form.save(commit=False)
+                aptitude_test_instance.event = event
+                aptitude_test_instance.save()
+
+                # Get or update the FormSet instance
+                question_formset = AptitudeQuestionFormSet(request.POST, instance=aptitude_test_instance)
+
+                if question_formset.is_valid():
+                    question_formset.save()
+                    messages.success(request, 'Aptitude Test setup complete! Applicants will now be screened.')
+                    return redirect('event_log')
+                else:
+                    messages.error(request, 'There were errors in your questions. Please review them.')
+            else:
+                messages.error(request, 'Please correct the time and date settings.')
+                # Need to re-instantiate question_formset here for failed test_form POST
+                question_formset = AptitudeQuestionFormSet(request.POST, instance=aptitude_test)
+
+        else:
+            # GET Request
+            test_form = AptitudeTestForm(instance=aptitude_test)
+            question_formset = AptitudeQuestionFormSet(instance=aptitude_test)
+
+        template_name = 'main_app/aptitude_test_setup.html'
+        context_data = {
+            'test_form': test_form,
+            'question_formset': question_formset,
+        }
+
+    elif screening_type == 'video' or screening_type == 'photo':
+        # --- VIDEO / PHOTO SCREENING SETUP (SIMPLE REDIRECT) ---
+        # Since there are no further settings for video/photo, we just confirm and redirect.
+        # If you later need a page to set submission guidelines, you would render a template here.
+        if request.method == 'POST':
+            # Confirmation logic is simple, assume POST means "I am done with setup"
+            messages.success(request,
+                             f'{screening_type.title()} Screening selected. Applicants will be prompted to upload their file upon application.')
+            return redirect('event_log')
+        else:
+            # GET request for a simple confirmation page (We don't have this template, so redirect for now)
+            # For a real application, you'd render a dedicated 'media_screening_setup.html' here.
+            messages.info(request,
+                          f'No further setup required for {screening_type.title()} Screening. Redirecting to Event Log.')
+            return redirect('event_log')
+
+    else:
+        messages.error(request, 'Invalid screening type selected.')
+        return redirect('event_log')
+
+    # General context for all paths that render a form (only 'aptitude' path hits this)
+    context = {
+        'event': event,
+        'page_title': f"Setup {screening_type.title()} Screening for {event.event_name}",
+        'screening_type': screening_type,
+        **context_data
+    }
+
+    return render(request, template_name, context)
+
+
+
+
+@login_required
+def test_start_page_view(request, event_link_key):
+    event = get_object_or_404(Event, event_link_key=event_link_key)
+
+    # Security check: User must have applied AND the test must be set up
+    if not EventApplicationDetails.objects.filter(user=request.user, event=event).exists():
+        messages.error(request, "You must apply for the event before accessing the test details.")
+        return redirect('event_detail', event_link_key=event_link_key)
+
+    try:
+        aptitude_test = event.aptitude_test
+    except AptitudeTest.DoesNotExist:
+        messages.error(request, "Test details are not available for this event.")
+        return redirect('dashboard')
+
+    # Check if user has already attempted the test
+    attempt = AptitudeTestAttempt.objects.filter(user=request.user, test=aptitude_test).first()
+    if attempt:
+        messages.warning(request, f"You have already completed this test with a score of {attempt.score} points.")
+        return redirect('dashboard')
+
+    now = timezone.now()
+    test_start_time = aptitude_test.test_start_date_time
+
+    # ⭐ NEW 10-MINUTE WINDOW END TIME ⭐
+    test_access_window_end = test_start_time + timedelta(minutes=10)
+
+    # Determine the test status
+    is_test_started = now >= test_start_time
+    is_test_window_open = is_test_started and now < test_access_window_end
+
+    # Check if the access window has closed
+    if now >= test_access_window_end:
+        messages.error(request, "The window to start this aptitude test has closed. Please contact the organizer.")
+        return redirect('dashboard')
+
+    # Calculate time remaining for the countdown
+    time_difference = None
+    time_until_start = None
+
+    if not is_test_started:
+        # Before start: Countdown to the official test_start_time
+        time_difference = test_start_time - now
+        countdown_target_time = test_start_time
+        is_grace_period = False
+    else:
+        # During the 10-minute window: Countdown to the end of the window
+        time_difference = test_access_window_end - now
+        countdown_target_time = test_access_window_end
+        is_grace_period = True
+
+    if time_difference and time_difference.total_seconds() > 0:
+        total_seconds = int(time_difference.total_seconds())
+        days, remainder = divmod(total_seconds, 86400)
+        hours, remainder = divmod(remainder, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        time_until_start = {
+            'days': days,
+            'hours': hours,
+            'minutes': minutes,
+            'seconds': seconds,
+            'is_grace_period': is_grace_period  # Flag for the template
+        }
+
+    context = {
+        'event': event,
+        'aptitude_test': aptitude_test,
+        'is_test_available': is_test_window_open,
+        'time_until_start': time_until_start,
+        'page_title': f"Aptitude Test for {event.event_name}",
+        # Pass the countdown target time (either start time or end of window) as a reliably formatted string
+        'countdown_target_iso': countdown_target_time.isoformat(),
+        'is_grace_period': is_grace_period,
+        'local_time_zone': 'Asia/Kolkata'
+    }
+
+    return render(request, 'main_app/test_start_page.html', context)
+
+# ... (near the test_start_page_view function) ...
+
+@login_required
+def take_aptitude_test_view(request, event_link_key):
+    event = get_object_or_404(Event, event_link_key=event_link_key)
+
+    # --- 1. Security and Status Checks ---
+    try:
+        aptitude_test = event.aptitude_test
+    except AptitudeTest.DoesNotExist:
+        messages.error(request, "Test is not configured for this event.")
+        return redirect('dashboard')
+
+    # Check if the user has applied
+    if not EventApplicationDetails.objects.filter(user=request.user, event=event).exists():
+        messages.error(request, "You must apply for the event before taking the test.")
+        return redirect('event_detail', event_link_key=event_link_key)
+
+    # Check if the test is available (optional: we rely on the start page, but good to check)
+    if timezone.now() < aptitude_test.test_start_date_time:
+        messages.warning(request, "The test has not started yet.")
+        return redirect('test_start_page', event_link_key=event_link_key)
+
+    # Check if user has already attempted the test
+    if AptitudeTestAttempt.objects.filter(user=request.user, test=aptitude_test).exists():
+        messages.warning(request, "You have already completed this test.")
+        return redirect('dashboard')
+
+        # --- 2. Fetch Questions ---
+    questions = aptitude_test.questions.all()  # Fetch all related questions
+
+    if not questions.exists():
+        messages.error(request, "No questions have been set for this test.")
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        # --- 3. POST Handling: Scoring and Saving Attempt ---
+
+        total_score = 0
+
+        # Calculate time taken from a hidden field passed by the form (or session/JS)
+        # For simplicity, we assume the form sends 'time_taken_seconds'
+        time_taken_seconds = int(request.POST.get('time_taken_seconds', 0))
+
+        # Iterate over submitted answers
+        for question in questions:
+            # The answer key is formatted as 'q_[question_id]'
+            submitted_answer = request.POST.get(f'q_{question.id}')
+
+            # Check if the submitted answer matches the correct answer
+            if submitted_answer and submitted_answer.upper() == question.correct_answer.upper():
+                total_score += question.points
+
+        # Save the attempt
+        AptitudeTestAttempt.objects.create(
+            user=request.user,
+            test=aptitude_test,
+            score=total_score,
+            time_taken_seconds=time_taken_seconds
+        )
+
+        messages.success(request,
+                         f"Test submitted! Your score is {total_score} out of {sum(q.points for q in questions)}.")
+        return redirect('dashboard')  # Redirect after successful submission
+
+    # --- 4. GET Handling: Display Test ---
+    context = {
+        'event': event,
+        'aptitude_test': aptitude_test,
+        'questions': questions,
+        'time_limit_seconds': aptitude_test.time_limit_minutes * 60,  # Total seconds for JS timer
+        'page_title': f"Aptitude Test: {event.event_name}",
+    }
+
+    return render(request, 'main_app/take_aptitude_test.html', context)
+
+
+
+@login_required
+@require_POST
+def toggle_shortlist_view(request, app_id):
+    """
+    API endpoint to toggle the 'is_shortlisted' status of a single application.
+    The frontend sends the application ID.
+    """
+    try:
+        # 1. Find the application by its ID
+        application = EventApplicationDetails.objects.get(pk=app_id)
+
+        # 2. Security Check: Ensure the current user is the organizer of the event
+        if application.event.organizer != request.user:
+            return JsonResponse({'status': 'error', 'message': 'Unauthorized action.'}, status=403)
+
+        # 3. Toggle the status and save
+        application.is_shortlisted = not application.is_shortlisted
+        application.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'is_shortlisted': application.is_shortlisted
+        })
+
+    except EventApplicationDetails.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Application not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+def shortlisted_applicants_view(request, event_id):
+    # 1. Get the event, ensuring the current user is the organizer
+    event = get_object_or_404(Event, id=event_id, organizer=request.user)
+
+    # 2. Fetch only the shortlisted applications
+    shortlisted_registrations = EventApplicationDetails.objects.filter(
+        event=event,
+        is_shortlisted=True
+    ).order_by('name')
+
+    # ⭐ NEW LOGIC: Use generic submission fetching ⭐
+    screening_type = event.screening_type
+    applicant_submissions = {}
+
+    if screening_type == 'aptitude':
+        if hasattr(event, 'aptitude_test'):
+            aptitude_test = event.aptitude_test
+            attempts = aptitude_test.attempts.select_related('user')
+            for attempt in attempts:
+                applicant_submissions[attempt.user.pk] = {
+                    'score': attempt.score,
+                    'time_taken_seconds': attempt.time_taken_seconds
+                }
+
+    elif screening_type == 'video':
+        submissions = VideoScreeningSubmission.objects.filter(event=event).select_related('user')
+        for sub in submissions:
+            applicant_submissions[sub.user.pk] = {'media_url': sub.video_file.url}
+
+    elif screening_type == 'photo':
+        submissions = PhotoScreeningSubmission.objects.filter(event=event).select_related('user')
+        for sub in submissions:
+            applicant_submissions[sub.user.pk] = {'media_url': sub.photo_file.url}
+
+    context = {
+        'event': event,
+        'registrations': shortlisted_registrations,  # Pass the filtered list
+        'screening_type': screening_type,
+        'applicant_submissions': applicant_submissions,
+        'is_shortlisted_view': True,  # Flag for template title/navigation changes
+    }
+
+    # We will reuse the registrations.html template for consistent formatting
+    return render(request, 'main_app/registrations.html', context)
+
+
+# In main_app/views.py (Add the following function)
+
+@login_required
+def media_upload_page_view(request, event_link_key, media_type):
+    event = get_object_or_404(Event, event_link_key=event_link_key)
+    user = request.user
+
+    # 1. Validation: Ensure user has applied and the event requires this type of screening
+    if not EventApplicationDetails.objects.filter(user=user, event=event).exists():
+        messages.error(request, "You must complete your application before submitting media.")
+        return redirect('event_detail', event_link_key=event_link_key)
+
+    if event.screening_type != media_type:
+        messages.error(request,
+                       f"This event requires {event.screening_type.title()} screening, not {media_type.title()}.")
+        return redirect('dashboard')
+
+    # 2. Check for existing submission
+    if media_type == 'video':
+        SubmissionModel = VideoScreeningSubmission
+        UploadForm = VideoSubmissionForm
+        file_field = 'video_file'
+    else:  # media_type == 'photo'
+        SubmissionModel = PhotoScreeningSubmission
+        UploadForm = PhotoSubmissionForm
+        file_field = 'photo_file'
+
+    if SubmissionModel.objects.filter(user=user, event=event).exists():
+        messages.warning(request, f"You have already submitted your {media_type} for this event.")
+        return redirect('dashboard')
+
+    # 3. Handle POST Request (Submission)
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            submission = form.save(commit=False)
+            submission.user = user
+            submission.event = event
+            submission.save()
+
+            messages.success(request, f"Your {media_type} has been successfully submitted!")
+            return redirect('dashboard')
+        else:
+            messages.error(request,
+                           f"There was an error with your {media_type} submission. Please check the file type and size.")
+    else:
+        # 4. Handle GET Request (Display Form)
+        form = UploadForm()
+
+    context = {
+        'event': event,
+        'form': form,
+        'media_type': media_type,
+        'page_title': f"{media_type.title()} Submission for {event.event_name}",
+        'file_field_name': file_field
+    }
+    return render(request, 'main_app/media_upload_page.html', context)
+
+
+
+
+def state_list_api_view(request):
+    """
+    Provides a list of canonical state names for an autocomplete field
+    from the dedicated State model.
+    """
+    # 1. Get the query string from the frontend (e.g., 'mah')
+    query = request.GET.get('q', '').strip()
+
+    # 2. Filter the clean State model (case-insensitive startswith)
+    # We order by name and limit to 10 suggestions for performance.
+    states = State.objects.filter(name__istartswith=query).order_by('name')[:10]
+
+    # 3. Format the results as a simple list of strings
+    results = [state.name for state in states]
+
+    # 4. Return the list as JSON
+    return JsonResponse(results, safe=False)

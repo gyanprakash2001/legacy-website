@@ -39,8 +39,8 @@
 
         /* 2. Form Container (The floating card wrapper) */
         .form-container {
-            max-width: 800px;
-            width: 90%;
+            max-width: 1000px;
+            width: 95%;
             margin: 40px auto;
             padding: 30px;
             background-color: var(--color-left-bg, #1e1e1e);
@@ -114,8 +114,9 @@
         }
 
         .description-group textarea {
-            min-height: 150px;
+            min-height: 250px;
             resize: vertical;
+            width: 100% !important;
         }
 
         /* 5. Phone Input Container Fix */
@@ -217,7 +218,96 @@
             border: 1px solid var(--color-success-border, #4CAF50);
         }
         /* Error messages will implicitly use the white text */
+        /* Custom Screening Type Selector Styling */
+        .screening-section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--color-text-dark, #f0f0f0);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--color-border-light, #444444);
+            padding-bottom: 10px;
+        }
 
+        .screening-choices {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap; /* Allows wrapping on smaller screens */
+            margin-bottom: 25px;
+            justify-content: space-between; /* Spreads cards out */
+        }
+
+        /* Make each card take up roughly 1/4 of the width, allowing for 4 side-by-side */
+        .choice-card {
+            width: calc(24% - 10px) /* Adjusted for 4 cards and 3 gaps of 15px */
+            min-width: 150px; /* Allow cards to be slightly smaller */
+            background-color: var(--color-secondary-bg, #292929); /* Use secondary BG for card body */
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--color-border-light, #444444);
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .choice-card:hover {
+            background-color: #333333; /* Darker hover */
+            border-color: var(--color-primary-button, #ffffff); /* Use white accent for border hover */
+        }
+
+        /* Hide the default radio button */
+        .choice-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            margin: 0;
+            z-index: 10;
+        }
+
+        /* Style for the selected card */
+        .choice-card input[type="radio"]:checked + .card-content {
+            box-shadow: 0 0 0 3px #4CAF50; /* CHANGED TO GREEN */
+            background-color: var(--color-left-bg, #1e1e1e);
+            border-radius: 6px;
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
+            text-align: center;
+            z-index: 1; /* Should be lower than radio input z-index */
+            pointer-events: none;
+        }
+
+        .card-content i {
+            font-size: 1.8rem;
+            color: var(--color-primary-button, #ffffff); /* Use white accent for icons */
+            margin-bottom: 8px;
+        }
+
+        .card-label {
+            font-weight: bold;
+            color: var(--color-text-dark);
+            font-size: 1.1em;
+        }
+
+        .card-description {
+            font-size: 0.85em;
+            color: var(--color-placeholder, #888888);
+            margin-top: 4px;
+        }
+
+        /* Ensure radios and checkboxes are rendered cleanly inside form-group */
+        .form-group label, .form-check label {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -287,6 +377,7 @@
                     <div class="form-group state-field">
                         <label for="{{ form.state.id_for_label }}">State:</label>
                         {{ form.state }}
+                        <datalist id="state-suggestions-create-event"></datalist>
                     </div>
                 </div>
 
@@ -318,10 +409,92 @@
                         Display phone number on "Query?" link
                     </label>
                 </div>
-            </div>
 
-            <button type="submit" class="create-event-btn">Create Event</button>
+                </div>
+                <div class="form-section screening-round">
+                    <h2 class="screening-section-title">
+                        Screening Round: Choose One Option
+                    </h2>
+
+                    {% if form.screening_type.errors %}
+                        <div class="errorlist" style="color: red; margin-bottom: 10px;">
+                            {{ form.screening_type.errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="screening-choices">
+                        {% for value, label in form.screening_type.field.choices %}
+
+                            {% with current_name=form.screening_type.html_name %}
+                            <label class="choice-card">
+
+                                <input type="radio"
+                                       id="id_{{ current_name }}_{{ forloop.counter0 }}"
+                                       name="{{ current_name }}"
+                                       value="{{ value }}"
+                                       {% if form.screening_type.value == value %}checked{% endif %}
+                                       required>
+
+                                <div class="card-content">
+                                    {% if value == 'none' %}
+                                        <i class="fa fa-ban"></i>
+                                        <span class="card-label">No Screening</span>
+                                        <span class="card-description">Registrations close immediately.</span>
+                                    {% elif value == 'aptitude' %}
+                                        <i class="fa fa-pencil-alt"></i>
+                                        <span class="card-label">Aptitude Test</span>
+                                        <span class="card-description">Set time limit and questions.</span>
+                                    {% elif value == 'video' %}
+                                        <i class="fa fa-video"></i>
+                                        <span class="card-label">Video Screening</span>
+                                        <span class="card-description">Applicants upload a video file.</span>
+                                    {% elif value == 'photo' %}
+                                        <i class="fa fa-image"></i>
+                                        <span class="card-label">Photo Screening</span>
+                                        <span class="card-description">Applicants upload a single photo.</span>
+                                    {% endif %}
+                                </div>
+                            </label>
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="submit" class="create-event-btn">Create Event</button>
         </form>
     </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const stateInput = document.getElementById('id_state'); // Django creates 'id_state' for the form field
+        const datalist = document.getElementById('state-suggestions-create-event');
+        const apiUrl = "{% url 'state_list_api' %}";
+
+        // 1. Link the input to the datalist manually
+        stateInput.setAttribute('list', 'state-suggestions-create-event');
+
+        // 2. Event Listener for fetching suggestions on input
+        stateInput.addEventListener('input', function() {
+            const query = this.value;
+            // Only search if the query is at least 2 characters long
+            if (query.length < 2) {
+                datalist.innerHTML = ''; // Clear suggestions if query is too short
+                return;
+            }
+
+            // Fetch suggestions from the new API
+            fetch(`${apiUrl}?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    datalist.innerHTML = ''; // Clear existing suggestions
+
+                    data.forEach(stateName => {
+                        const option = document.createElement('option');
+                        option.value = stateName;
+                        datalist.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching states for Create Event:', error));
+        });
+    });
+</script>
 </body>
 </html>

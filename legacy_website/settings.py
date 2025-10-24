@@ -44,6 +44,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,7 +53,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main_app',
     'cloudinary_storage', # New
-    'cloudinary',         # New
+    'cloudinary',
+    'channels', # New
 ]
 
 MIDDLEWARE = [
@@ -84,7 +86,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'legacy_website.wsgi.application'
-
+ASGI_APPLICATION = 'legacy_website.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

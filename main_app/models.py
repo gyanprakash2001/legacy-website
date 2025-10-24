@@ -73,8 +73,92 @@ class Event(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     show_phone_number_on_query = models.BooleanField(default=True)
 
+    SCREENING_CHOICES = [
+        ('none', 'No Screening'),
+        ('aptitude', 'Aptitude Test'),
+        ('video', 'Video Screening'),
+        ('photo', 'Photo Screening'),
+    ]
+
+    # ⭐ NEW FIELD: Use a CharField for the screening choice
+    screening_type = models.CharField(
+        max_length=10,
+        choices=SCREENING_CHOICES,
+        default='none',
+        verbose_name='Screening Round Type'
+    )
+
     def __str__(self):
         return self.event_name
+
+
+# ... (after the Event model)
+
+class AptitudeTest(models.Model):
+    """Stores the main details for an aptitude test tied to an Event."""
+
+    # CRITICAL: One-to-one link to the Event. Every event can have at most one test.
+    event = models.OneToOneField(
+        'Event',
+        on_delete=models.CASCADE,
+        related_name='aptitude_test'
+    )
+
+    # 1. Stores the total time limit in minutes
+    time_limit_minutes = models.IntegerField(
+        default=30,
+        verbose_name='Time Limit (Minutes)'
+    )
+
+    # 2. Stores the date/time the test should be available to applicants
+    test_start_date_time = models.DateTimeField(
+        verbose_name='Test Start Date and Time'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Aptitude Test for {self.event.event_name}"
+
+
+class AptitudeQuestion(models.Model):
+    """Stores the individual Multiple Choice Questions for a test."""
+
+    # Link to the Test Header (one AptitudeTest has many Questions)
+    test = models.ForeignKey(
+        'AptitudeTest',
+        on_delete=models.CASCADE,
+        related_name='questions'
+    )
+
+    question_text = models.TextField()
+
+    # Stores the options for the MCQ
+    option_a = models.CharField(max_length=500)
+    option_b = models.CharField(max_length=500)
+    option_c = models.CharField(max_length=500)
+    option_d = models.CharField(max_length=500)
+
+    # Stores the correct answer (A, B, C, or D)
+    # Choices make sure the data is valid
+    ANSWER_CHOICES = [
+        ('A', 'Option A'),
+        ('B', 'Option B'),
+        ('C', 'Option C'),
+        ('D', 'Option D'),
+    ]
+    correct_answer = models.CharField(
+        max_length=1,
+        choices=ANSWER_CHOICES
+    )
+
+    # Scoring (simple points per question)
+    points = models.IntegerField(default=1)
+
+    def __str__(self):
+        return f"Q{self.id}: {self.question_text[:30]}..."
+
+
 
 class EventApplicationDetails(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -84,12 +168,87 @@ class EventApplicationDetails(models.Model):
     whatsapp_number = models.CharField(max_length=20, null=True, blank=True)
     email_id = models.EmailField()
     applied_at = models.DateTimeField(auto_now_add=True)
+    is_shortlisted = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('user', 'event')
 
     def __str__(self):
         return f"{self.name} applied to {self.event.event_name}"
+
+
+class AptitudeTestAttempt(models.Model):
+    """Tracks a user's attempt at an AptitudeTest and stores their score."""
+
+    # Link to the user who took the test
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='test_attempts'
+    )
+
+    # Link to the specific test/event
+    test = models.ForeignKey(
+        'AptitudeTest',
+        on_delete=models.CASCADE,
+        related_name='attempts'
+    )
+
+    # Tracks the total time taken (in seconds)
+    time_taken_seconds = models.IntegerField(
+        null=True,
+        blank=True
+    )
+
+    # The final calculated score
+    score = models.IntegerField(default=0)
+
+    # Timestamp of when the test was submitted
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # A user can only attempt a specific test once
+        unique_together = ('user', 'test')
+
+    def __str__(self):
+        return f"{self.user.username}'s score for {self.test.event.event_name}: {self.score}"
+
+
+
+# Add these two new classes after EventApplicationDetails model
+
+class VideoScreeningSubmission(models.Model):
+    """Stores the video file submission for a registered user."""
+    # Using OneToOneField here is simpler if we assume a user can submit one file per event application
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='video_submissions') # Changed to ForeignKey
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    video_file = models.FileField(upload_to='event_videos/')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'event')
+        verbose_name = "Video Submission"
+
+    def __str__(self):
+        return f"Video by {self.user.username} for {self.event.event_name}"
+
+
+class PhotoScreeningSubmission(models.Model):
+    """Stores the photo file submission for a registered user."""
+    # Using OneToOneField here is simpler if we assume a user can submit one file per event application
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='photo_submissions') # Changed to ForeignKey
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    photo_file = models.ImageField(upload_to='event_photos/')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'event')
+        verbose_name = "Photo Submission"
+
+    def __str__(self):
+        return f"Photo by {self.user.username} for {self.event.event_name}"
+
+
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
@@ -181,3 +340,14 @@ class ChatMessage(models.Model):
 
     class Meta:
         ordering = ['timestamp']
+
+
+
+
+# Add this new class:
+class State(models.Model):
+    """Stores a clean, canonical list of state names."""
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name

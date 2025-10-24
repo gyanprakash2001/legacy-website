@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ event.event_name }} - LEGACY</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        /* Reused dark theme variables for consistency */
+        :root {
+            --color-primary-button: #ffffff;
+            --color-up-text: #000000;
+            --color-text-dark: #f0f0f0;
+            --color-border-light: #444444;
+            --color-secondary-bg: #292929;
+            --color-placeholder: #888888;
+            --color-left-bg: #1e1e1e;
+            --color-link: #ffffff;
+        }
+
+        /* Base styles */
+        body {
+            background-color: #121212 !important;
+            color: var(--color-text-dark);
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* Main Container Card */
+        .detail-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: var(--color-left-bg);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Typography */
+        h1 {
+            color: var(--color-text-dark);
+            font-size: 2.0em;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--color-border-light);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.4em;
+            color: var(--color-text-dark);
+            margin-top: 20px;
+            border-bottom: 1px dashed var(--color-border-light);
+            padding-bottom: 5px;
+        }
+
+        p {
+            color: var(--color-text-dark);
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        strong {
+            color: var(--color-placeholder); /* Gray for labels */
+            margin-right: 5px;
+            font-weight: bold;
+        }
+
+        /* Banner Image */
+        .event-banner {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-top: 15px;
+            object-fit: cover;
+            max-height: 300px;
+        }
+
+        /* Apply Button */
+        .apply-btn {
+            display: block;
+            width: 100%;
+            padding: 0;
+            margin-top: 30px;
+            text-decoration: none;
+        }
+
+        .apply-btn button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--color-primary-button);
+            color: var(--color-up-text);
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .apply-btn button:hover {
+            background-color: #dcdcdc; /* Subtle hover color */
+        }
+
+        /* Back Link */
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            color: var(--color-link);
+            text-decoration: none;
+            text-align: center;
+        }
+        .back-link:hover {
+            color: var(--color-placeholder);
+        }
+
+        /* Ensure description preserves formatting */
+        .description-content {
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+            background-color: var(--color-secondary-bg);
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="detail-container">
+
+        <a href="{% url 'dashboard' %}" class="back-link" style="text-align: left;">&larr; Back to Dashboard</a>
+
+        <h1>{{ event.event_name }}</h1>
+
+        {% if event.event_banner %}
+            <img src="{{ event.event_banner.url }}" alt="Event Banner" class="event-banner">
+        {% endif %}
+
+        <h2>Event Summary</h2>
+        <p><strong>Type:</strong> {{ event.event_type.name }}</p>
+        <p><strong>Organizer:</strong> {{ event.organizer.username }}</p>
+        <p><strong>Fees:</strong> {% if event.registration_fees %}₹{{ event.registration_fees }}{% else %}Free{% endif %}</p>
+
+        <h2>Location & Time</h2>
+        <p><strong>Location:</strong> {{ event.location }}</p>
+        {% if event.state %}<p><strong>State:</strong> {{ event.state }}</p>{% endif %}
+        <p><strong>Date:</strong> {{ event.date_time|date:"F d, Y" }}</p>
+        <p><strong>Time:</strong> {{ event.date_time|date:"P" }}</p>
+
+        {% if event.phone_number and event.show_phone_number_on_query %}
+            <h2>Contact</h2>
+            <p><strong>Phone:</strong> {{ event.phone_number }}</p>
+            <p><strong>Email:</strong> <a href="mailto:{{ event.organizer.email }}" style="color: var(--color-link);">{{ event.organizer.email }}</a></p>
+        {% endif %}
+
+        <h2>Description</h2>
+        <div class="description-content">
+            {{ event.description }}
+        </div>
+
+        <a href="{% url 'apply_for_event' event_link_key=event.event_link_key %}" class="apply-btn">
+            <button type="button">Apply for this Event</button>
+        </a>
+
+        <a href="{% url 'dashboard' %}" class="back-link">Back to Dashboard</a>
+    </div>
+
+</body>
+</html>

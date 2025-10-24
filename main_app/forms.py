@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 from django.forms import ClearableFileInput
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from .models import UserProfile, Post, Event, EventApplicationDetails, College
-
+from .models import UserProfile, Post, Event, EventApplicationDetails, College, AptitudeTest, AptitudeQuestion, VideoScreeningSubmission, PhotoScreeningSubmission
+from django.forms import inlineformset_factory
 
 class MultiFileInput(ClearableFileInput):
     def __init__(self, attrs=None):
@@ -87,7 +87,8 @@ class EventCreationForm(forms.ModelForm):
             'date_time',
             'registration_fees',
             'phone_number',
-            'show_phone_number_on_query'
+            'show_phone_number_on_query',
+            'screening_type'
         ]
 
         # 3. REMOVE TIME: Use DateInput widget instead of DateTimeInput
@@ -240,3 +241,77 @@ class MandatoryProfileForm(forms.ModelForm):
         if commit:
             profile.save()  # Save the UserProfile model updates
         return profile
+
+
+# main_app/forms.py (Add to the imports section at the top)
+from django.forms import inlineformset_factory
+
+
+# (You may need to add this import if it's missing)
+
+# ... (Add these new classes at the end of the file) ...
+
+class AptitudeTestForm(forms.ModelForm):
+    """Form for setting the time limit and test date."""
+
+    # Use DateTimeInput for a better user experience for date_time
+    test_start_date_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        label='Test Start Date and Time'
+    )
+
+    class Meta:
+        model = AptitudeTest
+        # We only let the user set these two fields. The 'event' field is set in the view.
+        fields = ['time_limit_minutes', 'test_start_date_time']
+
+        widgets = {
+            'time_limit_minutes': forms.NumberInput(attrs={'min': 1, 'max': 180, 'placeholder': 'e.g., 60 (minutes)'}),
+        }
+
+
+class AptitudeQuestionForm(forms.ModelForm):
+    """Form for a single MCQ question and its options/answer."""
+
+    class Meta:
+        model = AptitudeQuestion
+        fields = [
+            'question_text', 'option_a', 'option_b', 'option_c', 'option_d',
+            'correct_answer', 'points'
+        ]
+
+        widgets = {
+            'question_text': forms.Textarea(attrs={'rows': 2}),
+            'points': forms.NumberInput(attrs={'min': 1, 'max': 10}),
+        }
+
+
+# CRITICAL: Create the FormSet for multiple questions
+# We use AptitudeQuestion model, linked by ForeignKey 'test' in the AptitudeQuestion model.
+AptitudeQuestionFormSet = inlineformset_factory(
+    AptitudeTest,  # Parent model (AptitudeTest)
+    AptitudeQuestion,  # Child model (AptitudeQuestion)
+    form=AptitudeQuestionForm,
+    extra=1,  # Start with one empty form
+    can_delete=True,
+    # This is the max number of questions the user can enter
+    max_num=50
+)
+
+
+
+# In main_app/forms.py (Add the following two classes)
+
+class VideoSubmissionForm(forms.ModelForm):
+    """Form for uploading a video file for screening."""
+    class Meta:
+        model = VideoScreeningSubmission
+        # We only let the user choose the file. 'user' and 'event' are set in the view.
+        fields = ['video_file']
+
+class PhotoSubmissionForm(forms.ModelForm):
+    """Form for uploading a photo file for screening."""
+    class Meta:
+        model = PhotoScreeningSubmission
+        # We only let the user choose the file. 'user' and 'event' are set in the view.
+        fields = ['photo_file']

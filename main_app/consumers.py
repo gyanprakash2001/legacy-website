@@ -79,10 +79,15 @@ class CollegeChatConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(send_data))
 
     def chat_delete(self, event):
-        message_id = event['message_id']
+        """
+        Receives the delete signal from the Django view via the channel layer
+        and sends the instruction to the connected WebSocket client.
+        """
+        # The event dictionary from the view is: {'type': 'chat_delete', 'message_id': message_id}
 
-        # Send deletion instruction to WebSocket (sends data back to the browser)
+        # Send the instruction to the WebSocket client
         self.send(text_data=json.dumps({
-            'type': 'delete_instruction',  # Instructs the frontend JS what to do
-            'message_id': message_id
+            # We send the same type back as the frontend is now listening for (Step 2 fix)
+            'type': 'chat_delete',
+            'message_id': event['message_id']
         }))

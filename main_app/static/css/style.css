@@ -1524,42 +1524,49 @@ body {
     align-items: center;
 }
 
-/* Style the chat button specifically */
-.chat-button {
-    background-color: #5865f2; /* A chat-like blue/purple color (e.g., Discord) */
-    color: white !important; /* Ensure text is white */
-    padding: 8px 12px;
-    border-radius: 4px;
+/* NEW: Community Chat Button Styles (Centered in Middle Pane)        */
+/* ------------------------------------------------------------------ */
+
+/* 1. Container to Center the Button */
+.community-chat-container {
+    /* Ensures the container takes full width of its parent (the middle pane) */
+    width: 100%;
+    /* Centers the inline-block child element (the button) */
+    text-align: center;
+    /* Add top/bottom margin for good spacing below the header */
+    margin: 10px 0 20px 0;
+}
+
+/* 2. Style the Button (Dark Theme & Font Match) */
+.community-chat-button {
+    /* Basic button styling */
+    display: inline-flex; /* Use flex to align icon and text */
+    align-items: center;
+    gap: 10px; /* Space between icon and text */
+
+    padding: 12px 25px;
+    border-radius: 25px; /* More rounded to look like a modern button */
     text-decoration: none;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    cursor: pointer;
+
+    /* Dark Theme/Font Styles */
+    /* Use an accent color or a slightly lighter dark color for contrast */
+    background-color: var(--color-secondary-bg, #292929);
+    color: var(--color-text-dark, #f0f0f0);
+    border: 1px solid var(--color-border-light, #444444);
+
+    /* Font Size: Match My Community/Home link font size (approx 1.2rem) */
+    font-size: 1.2rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
-.chat-button:hover {
-    background-color: #4a54c9;
-}
-
-.chat-button i {
-    margin-right: 5px;
-}
-
-/* Ensure the H1 can contain inline elements correctly */
-.main-feed .feed-header h1 {
-    display: flex; /* Allows content and button to sit side-by-side */
-    align-items: center; /* Vertically centers the button with the text */
-    gap: 15px; /* Adds space between the "My Community" text and the button */
-    padding: 0;
-    margin: 0;
-}
-
-/* Maintain button style from before */
-.main-feed .feed-header h1 .chat-button {
-    /* Keep the button looking like a button, not a header link */
-    background-color: #5865f2;
-    color: white !important;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 1rem; /* Adjust size if needed */
-    height: fit-content;
+/* 3. Hover Effect (Show as a button) */
+.community-chat-button:hover {
+    /* Highlight with the primary accent color on hover */
+    background-color: var(--color-primary-button, #BB86FC);
+    color: var(--color-up-text, #000000); /* Dark text for contrast on bright background */
+    border-color: var(--color-primary-button, #BB86FC);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Lifted shadow */
+    transform: translateY(-2px); /* Slight lift */
 }

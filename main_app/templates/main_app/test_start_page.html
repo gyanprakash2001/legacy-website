@@ -1,0 +1,193 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        /* Reuse dark theme styles */
+        body { background-color: #121212 !important; color: #f0f0f0; }
+        .test-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            font-family: 'Times New Roman', Times, serif;
+        }
+        h1 { color: #f0f0f0; font-size: 1.8em; margin-bottom: 20px; text-align: center; }
+
+        .details {
+            background-color: #292929;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .details p { margin: 10px 0; }
+
+        .timer-box {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 8px;
+            /* This is where the JS writes the countdown */
+        }
+        .timer-box h2 { font-size: 1.5em; color: #ffffff; }
+        #countdown {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #ffffff;
+        }
+
+        .start-btn {
+            display: block; width: 100%; padding: 15px; margin-top: 30px;
+            background-color: #4CAF50; color: #ffffff; border: none; border-radius: 25px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: background-color 0.2s;
+            text-decoration: none; text-align: center;
+        }
+        .start-btn:hover { background-color: #38703E; }
+        .disabled-btn { background-color: #444444; cursor: not-allowed; }
+
+        .grace-text {
+            color: #FFD2D2; /* Light red text */
+            background-color: #703838; /* Dark red background */
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="test-container">
+        <h1>{{ page_title }}</h1>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+
+        <div class="details">
+            <p><strong>Event:</strong> {{ event.event_name }}</p>
+
+            {% load tz %}
+            {% timezone local_time_zone %}
+                <p><strong>Scheduled Start:</strong> {{ aptitude_test.test_start_date_time|date:"F d, Y P" }}</p>
+            {% endtimezone %}
+
+            <p><strong>Duration:</strong> {{ aptitude_test.time_limit_minutes }} Minutes</p>
+
+            {% if is_grace_period %}
+                <p class="grace-text">
+                    The test is now **OPEN**. You must click "Start Test Now" before the grace period ends.
+                </p>
+            {% endif %}
+
+            <p style="color: #FF6347;">**Important:** The test is timed. Once you click "Start," the timer begins!</p>
+        </div>
+
+        <div class="timer-box">
+            {% if is_test_available %}
+                <!-- Test is available (within the 10-minute window) -->
+                <h2>Time Remaining to Start Test:</h2>
+                <div id="countdown" data-start-time="{{ countdown_target_iso }}">
+                    <span id="days">00</span> days,
+                    <span id="hours">00</span> hours,
+                    <span id="minutes">00</span> minutes,
+                    <span id="seconds">00</span> seconds
+                </div>
+                <a href="{% url 'take_aptitude_test' event_link_key=event.event_link_key %}" class="start-btn" id="start-link">
+                    Start Test Now
+                </a>
+            {% else %}
+                <!-- Test is not yet available (counting down to start time) -->
+                <h2>Test Begins In:</h2>
+                <div id="countdown" data-start-time="{{ countdown_target_iso }}">
+                    <span id="days">{{ time_until_start.days|default:"00" }}</span> days,
+                    <span id="hours">{{ time_until_start.hours|default:"00" }}</span> hours,
+                    <span id="minutes">{{ time_until_start.minutes|default:"00" }}</span> minutes,
+                    <span id="seconds">{{ time_until_start.seconds|default:"00" }}</span> seconds
+                </div>
+                <a href="#" class="start-btn disabled-btn" id="start-link">
+                    Waiting for Test to Begin...
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if time_until_start %}
+    <script>
+        // JavaScript for countdown timer
+        function initializeCountdown() {
+            const countdownEl = document.getElementById('countdown');
+            const startLink = document.getElementById('start-link');
+            const startTimeStr = countdownEl.getAttribute('data-start-time');
+
+            // CRITICAL FIX: Use ISO format. The view MUST pass the correct time (either start or end of grace).
+            const endTime = new Date(startTimeStr).getTime();
+            const redirectUrl = `{% url "take_aptitude_test" event_link_key=event.event_link_key %}`;
+
+            const isGracePeriodActive = {% if is_grace_period %}true{% else %}false{% endif %};
+
+
+            const x = setInterval(function() {
+                const now = new Date().getTime();
+                let distance = endTime - now;
+
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById("countdown").innerHTML = "00 days, 00 hours, 00 minutes, 00 seconds";
+
+                    if (isGracePeriodActive) {
+                        // Case: Grace window just closed. The server will handle the next redirect.
+                        document.querySelector('.timer-box h2').innerHTML = "Time window to start test has closed.";
+                        startLink.classList.add('disabled-btn');
+                        startLink.textContent = "Window Closed";
+                    } else {
+                        // Case: Test just started. Enable link and trigger reload to enter grace period view state.
+                        document.querySelector('.timer-box h2').innerHTML = "Test is now **Available**!";
+                        startLink.classList.remove('disabled-btn');
+                        startLink.textContent = "Start Test Now";
+                        startLink.href = redirectUrl;
+                    }
+                    // Crucial: Force reload to pick up new server flags (is_test_available=True or redirection)
+                    window.location.reload();
+                    return;
+                }
+
+                // Time calculations
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                distance -= days * (1000 * 60 * 60 * 24);
+
+                const hours = Math.floor(distance / (1000 * 60 * 60));
+                distance -= hours * (1000 * 60 * 60);
+
+                const minutes = Math.floor(distance / (1000 * 60));
+                distance -= minutes * (1000 * 60);
+
+                const seconds = Math.floor(distance / 1000);
+
+                // Display the result
+                document.getElementById("days").innerHTML = days.toString().padStart(2, '0');
+                document.getElementById("hours").innerHTML = hours.toString().padStart(2, '0');
+                document.getElementById("minutes").innerHTML = minutes.toString().padStart(2, '0');
+                document.getElementById("seconds").innerHTML = seconds.toString().padStart(2, '0');
+
+            }, 1000);
+        }
+
+        initializeCountdown();
+    </script>
+    {% endif %}
+
+</body>
+</html>

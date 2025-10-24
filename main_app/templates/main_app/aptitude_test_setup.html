@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        /* Reuse styles from create_event.html for consistency */
+        body { background-color: #121212 !important; font-family: 'Times New Roman', Times, serif; }
+        .form-container {
+            max-width: 900px; margin: 40px auto; padding: 30px;
+            background-color: #1e1e1e; border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); color: #f0f0f0;
+        }
+        .form-header h1 { color: #f0f0f0; font-size: 2.2em; border-bottom: 2px solid #444444; padding-bottom: 10px; margin-bottom: 20px; }
+        .form-section h2 { color: #f0f0f0; font-size: 1.6em; margin-top: 25px; margin-bottom: 15px; border-bottom: 1px dashed #444444; padding-bottom: 5px; }
+        .form-group label { font-weight: 600; color: #f0f0f0; margin-bottom: 8px; display: block; }
+
+        /* Input styling */
+        .form-container input[type="text"],
+        .form-container input[type="number"],
+        .form-container input[type="datetime-local"],
+        .form-container select,
+        .form-container textarea {
+            width: 100%; padding: 10px 15px; border: 1px solid #444444; border-radius: 8px;
+            font-size: 1rem; box-sizing: border-box; background-color: #292929; color: #f0f0f0;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* Question Formset Styling */
+        .question-form-container { /* This is the element that gets repeated */
+            border: 1px solid #666666;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: #292929; /* Darker than the main container */
+            position: relative;
+        }
+        .question-form-container h3 {
+            color: #ffffff;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #444444;
+        }
+
+        .option-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #703838; /* Dark red for delete */
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            background-color: #ffffff;
+            color: #000000;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            width: 100%;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+        .submit-btn:hover { background-color: #dcdcdc; }
+
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+
+        <div class="form-header">
+            <h1>Setup Aptitude Test for: {{ event.event_name }}</h1>
+            <p style="color: #888888;">Complete this form to create the screening round for your event.</p>
+        </div>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h2>Test Schedule and Duration</h2>
+
+                {{ test_form.non_field_errors }}
+
+                <div class="form-group">
+                    <label for="{{ test_form.time_limit_minutes.id_for_label }}">{{ test_form.time_limit_minutes.label }}:</label>
+                    {{ test_form.time_limit_minutes }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ test_form.test_start_date_time.id_for_label }}">{{ test_form.test_start_date_time.label }}:</label>
+                    {{ test_form.test_start_date_time }}
+                    <p style="font-size: 0.8em; color: #888888; margin-top: 5px;">Applicants will only see the test on this date/time.</p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Aptitude Questions (MCQs)</h2>
+
+                {{ question_formset.management_form }}
+                {{ question_formset.non_form_errors }}
+
+                <div id="question-wrapper">
+                    {% for form in question_formset %}
+                        <div class="question-form-container {% if form.errors %}has-errors{% endif %}" id="question-{{ forloop.counter0 }}">
+                            <!-- ⭐ CRITICAL FIX: Removed {{ forloop.counter }} here. JS will handle numbering. ⭐ -->
+                            <h3>Question #?</h3>
+
+                            {% if form.instance.pk %}
+                                <button type="button" class="delete-btn" onclick="document.getElementById('id_questions-{{ forloop.counter0 }}-DELETE').checked = true; document.getElementById('question-{{ forloop.counter0 }}').style.display = 'none';">
+                                    Delete
+                                </button>
+                            {% endif %}
+                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+                            <div class="form-group">
+                                <label>{{ form.question_text.label }}:</label>
+                                {{ form.question_text }}
+                            </div>
+
+                            <div class="option-group">
+                                <div class="form-group">
+                                    <label>{{ form.option_a.label }} (A):</label>
+                                    {{ form.option_a }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ form.option_b.label }} (B):</label>
+                                    {{ form.option_b }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ form.option_c.label }} (C):</label>
+                                    {{ form.option_c }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ form.option_d.label }} (D):</label>
+                                    {{ form.option_d }}
+                                </div>
+                            </div>
+
+                            <div class="option-group" style="grid-template-columns: 1fr 1fr;">
+                                <div class="form-group">
+                                    <label>{{ form.correct_answer.label }}:</label>
+                                    {{ form.correct_answer }}
+                                </div>
+                                <div class="form-group">
+                                    <label>{{ form.points.label }}:</label>
+                                    {{ form.points }}
+                                </div>
+                            </div>
+
+                            {% if form.errors %}
+                                <div style="color: #FF6347; margin-top: 10px; font-size: 0.9em;">
+                                    <strong>Error in Question {{ forloop.counter }}:</strong>
+                                    {% for field, errors in form.errors.items %}
+                                        <p>{{ field|capfirst }}: {{ errors|join:", " }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!--
+                    CRITICAL FIX: Removed the manual button. The plugin now generates the 'Add Another Question'
+                    link using the default addText and addCssClass options.
+                -->
+            </div>
+
+            <button type="submit" class="submit-btn">Save and Finish Test Setup</button>
+        </form>
+    </div>
+
+    <!-- Load necessary scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+
+    <script>
+        // Function to handle the numbering for ALL visible forms
+        function updateQuestionNumbers() {
+            // Targets all question containers that are currently visible (not deleted)
+            const visibleForms = $('#question-wrapper').children('.question-form-container').filter(':visible');
+
+            visibleForms.each(function(index) {
+                // Renumber the header based on the current index (starting at 0 + 1)
+                $(this).find('h3').text(`Question #${index + 1}`);
+            });
+        }
+
+        $(document).ready(function() {
+            // ⭐ 1. RUN THE NUMBERING IMMEDIATELY ON PAGE LOAD (Fixes initial Q#1 duplication) ⭐
+            updateQuestionNumbers();
+
+            // 2. Initialize the formset
+            $('#question-wrapper').formset({
+                prefix: 'questions',
+                addCssClass: 'add-row',
+                deleteCssClass: 'delete-row',
+                addText: '+ Add Another Question',
+                deleteText: 'Delete Question',
+
+                // Callback runs when a new row is added
+                added: function(row) {
+                    // Re-run numbering to update all headers
+                    updateQuestionNumbers();
+                },
+
+                // Callback runs when a row is deleted/removed
+                removed: function(row) {
+                    // Re-run numbering to fix the sequence gap
+                    updateQuestionNumbers();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
