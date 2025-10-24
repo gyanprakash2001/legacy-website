@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | Legacy</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
         /* CRITICAL: Copy of Dark Theme Variables for Local Consistency */
@@ -138,6 +139,11 @@
             text-decoration: underline;
         }
 
+        /* Add this to prevent the underline on the large buttons and the logo */
+        .choice-button, .choice-button:hover {
+            text-decoration: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -153,7 +159,7 @@
             <div class="divider">Or</div>
 
             <a href="{% url 'google_login' %}" class="choice-button google-button">
-                <span class="google-icon">&#x2690;</span>
+                <i class="fa-brands fa-google google-icon"></i>
                 SIGN UP WITH GOOGLE
             </a>
 
