@@ -44,6 +44,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 # Application definition
 
 INSTALLED_APPS = [
+    # 1. FRAMEWORK AND CORE APPS (Always safe to put here)
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -51,10 +52,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # 2. YOUR APP (CRITICAL: Place your app FIRST before allauth to load your templates)
     'main_app',
-    'cloudinary_storage', # New
+
+    # 3. STORAGE APPS (Also safe to put here)
+    'cloudinary_storage',
     'cloudinary',
-    'channels', # New
+    'channels',
+
+    # 4. ALLAUTH APPS (Must come AFTER 'main_app' for template override)
+    'django.contrib.sites',  # Required by allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +77,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -73,7 +86,14 @@ ROOT_URLCONF = 'legacy_website.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [
+            # CRITICAL: This is the absolute path to your main_app's templates folder.
+            # Django checks this list FIRST.
+            BASE_DIR / 'main_app' / 'templates',
+
+            # Keep your project-root 'templates' folder second.
+            BASE_DIR / 'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -220,3 +240,16 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+SITE_ID = 1
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
+LOGIN_REDIRECT_URL = '/dashboard/'
+ACCOUNT_LOGOUT_ON_GET = True

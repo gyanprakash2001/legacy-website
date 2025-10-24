@@ -185,6 +185,34 @@
             color: #f0f0f0;
             border: 1px solid #FF5252;
         }
+
+        /* --- ADDED CSS FOR SOCIAL LOGIN BUTTON AND DIVIDER --- */
+        .social-divider {
+            text-align: center;
+            margin: 15px 0 10px 0;
+            color: var(--color-text-dark);
+            font-weight: 500;
+        }
+
+        .social-btn {
+            background-color: #4285F4; /* Google Blue */
+            color: #ffffff;
+            border: none;
+            padding: 10px 0;
+            border-radius: 18px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.2s;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .social-btn:hover {
+            background-color: #357ae8; /* Darker blue on hover */
+        }
         /* --- END CORRECTED MESSAGE STYLES --- */
 
     </style>
@@ -221,6 +249,13 @@
                             {{ form.password }}
                         </div>
                         <button type="submit" class="login-btn">Log In</button>
+                        <div class="social-divider">
+                            — OR —
+                        </div>
+
+                        <a href="{% url 'google_login' %}?process=login" class="social-btn">
+                            Sign In with Google
+                        </a>
                     </form>
                 </div>
             </div>

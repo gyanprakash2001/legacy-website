@@ -1,0 +1,130 @@
+{% extends "allauth/layouts/base.html" %}  {# <-- MUST be the absolute first line #}
+
+{% load static %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock head_title %}
+
+{# Add your custom dark theme styles inside the extra_head block #}
+{% block extra_head %}
+    <style>
+        /*
+        --------------------------------------------------
+        SOCIAL AUTH OVERRIDE (Monochrome Dark Theme)
+        --------------------------------------------------
+        */
+
+        :root {
+            --color-primary-button: #ffffff;
+            --color-up-text: #000000;
+            --color-text-dark: #f0f0f0;
+            --color-border-light: #444444;
+            --color-left-bg: #1e1e1e;
+            --color-link: #ffffff;
+            --color-placeholder: #888888;
+        }
+
+        /* 1. CRITICAL: Force Global Background and Font for ALLAUTH page */
+        /* Since we are extending base.html, we target the body elements */
+        html, body {
+            background-color: #121212 !important;
+            font-family: 'Times New Roman', Times, serif !important;
+            color: var(--color-text-dark, #f0f0f0) !important;
+        }
+
+        /* Ensure the main content container is centered and styled */
+        .allauth-content {
+            display: flex; /* For centering */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 2. Main Content Card (Floating look) */
+        .social-auth-card {
+            max-width: 500px;
+            width: 90%;
+            padding: 40px;
+            background-color: var(--color-left-bg, #1e1e1e);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            text-align: left;
+            margin-top: -50px; /* Center it nicely */
+        }
+
+        /* 3. Header Text and Separators */
+        h1, h2 {
+            color: var(--color-text-dark, #f0f0f0);
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--color-border-light, #444444);
+            padding-bottom: 10px;
+        }
+
+        /* 4. Menu and Links (Using CSS from your file) */
+        .menu-list { list-style: none; padding: 0; margin-bottom: 30px; }
+        .menu-list li { margin-bottom: 5px; }
+
+        a:link, a:visited {
+            color: var(--color-link, #ffffff) !important;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-family: 'Times New Roman', Times, serif !important;
+        }
+        a:hover { color: var(--color-placeholder, #888888) !important; text-decoration: underline; }
+        p { color: var(--color-text-dark, #f0f0f0); margin: 10px 0; }
+
+        /* 6. The "Continue" Button */
+        .button {
+            background-color: var(--color-primary-button, #ffffff);
+            color: var(--color-up-text, #000000) !important;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            display: inline-block;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .button:hover { background-color: #dcdcdc !important; }
+
+    </style>
+{% endblock extra_head %}
+
+{# The main content of the allauth page goes into the content block #}
+{% block content %}
+<div class="allauth-content">
+    <div class="social-auth-card">
+
+        {# Displaying the menu from your original file #}
+        <p style="font-weight: bold; margin-bottom: 5px;">Menu:</p>
+        <ul class="menu-list">
+            <li><a href="#">Change Email</a></li>
+            <li><a href="#">Change Password</a></li>
+            <li><a href="#">Account Connections</a></li>
+            <li><a href="#">Sign Out</a></li>
+        </ul>
+
+        {# Main content from the view context #}
+        <h1>{% trans "Sign In Via Google" %}</h1>
+        <p>{% blocktrans with provider.name as provider_name %}You are about to sign in using a third-party account from {{ provider_name }}.{% endblocktrans %}</p>
+
+        {# The form to submit the confirmation #}
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div style="color: red;">{{ form.errors }}</div>
+            {% endif %}
+
+            {# Use your custom class on the button tag #}
+            <button class="button" type="submit">{% trans "Continue" %}</button>
+        </form>
+
+    </div>
+</div>
+{% endblock content %}
